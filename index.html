@@ -173,70 +173,26 @@ h1{font-size:16px;font-weight:500;margin-bottom:1rem;color:#1a1a1a}
 </div>
 
 <script>
-const PARTNERS=[
-  {name:"正木彩和",store:"097 横須賀中央",team:"グロース",tantou:"河本",role:"店長",fi:30.8,para:72.0,parafi:3.7,kairi:68.3},
-  {name:"加藤 夕奈",store:"071 板宿",team:"グロース",tantou:"河本",role:"",fi:13.0,para:56.5,parafi:4.3,kairi:52.2},
-  {name:"井上 麗",store:"015 阪急茨木",team:"グロース",tantou:"河本",role:"",fi:22.8,para:44.7,parafi:2.6,kairi:42.1},
-  {name:"三上 摩衣",store:"003 堺三国ヶ丘",team:"グロース",tantou:"河本",role:"",fi:24.8,para:45.1,parafi:8.8,kairi:36.3},
-  {name:"松尾 美奈",store:"013 橿原八木",team:"グロース",tantou:"河本",role:"",fi:20.2,para:40.4,parafi:14.7,kairi:25.7},
-  {name:"太田 莉愛",store:"051 ラソラ川西",team:"グロース",tantou:"河本",role:"",fi:10.0,para:15.0,parafi:20.0,kairi:5.0},
-  {name:"長山綾奈",store:"092 浦和西口",team:"グロース",tantou:"小島",role:"チーフ",fi:25.5,para:50.9,parafi:7.3,kairi:43.6},
-  {name:"服部 茜",store:"038 そよら湘南茅ヶ崎",team:"グロース",tantou:"小島",role:"",fi:29.7,para:59.3,parafi:2.5,kairi:56.8},
-  {name:"水越 朱音",store:"009 千里中央",team:"グロース",tantou:"小島",role:"",fi:27.0,para:51.1,parafi:5.8,kairi:45.3},
-  {name:"鹿島 咲恵",store:"041 柏駅前",team:"グロース",tantou:"小島",role:"",fi:23.0,para:48.0,parafi:10.0,kairi:38.0},
-  {name:"金森 愛奈",store:"080 大和郡山",team:"グロース",tantou:"小島",role:"",fi:23.3,para:37.9,parafi:10.3,kairi:27.6},
-  {name:"土井 琉綺",store:"132 博多駅前",team:"グロース",tantou:"小島",role:"",fi:12.1,para:31.8,parafi:19.7,kairi:12.1},
-  {name:"佐藤舞",store:"038 そよら湘南茅ヶ崎",team:"グロース",tantou:"高橋",role:"店長",fi:22.2,para:47.0,parafi:4.3,kairi:42.7},
-  {name:"名取 保乃夏",store:"124 相模大野ジョイモアーズ",team:"グロース",tantou:"高橋",role:"",fi:26.1,para:65.9,parafi:8.0,kairi:57.9},
-  {name:"北島 優菜",store:"083 ミウィ橋本",team:"グロース",tantou:"高橋",role:"",fi:11.1,para:55.6,parafi:11.1,kairi:44.5},
-  {name:"田中 絵里",store:"004 神戸三宮",team:"グロース",tantou:"高橋",role:"",fi:15.8,para:43.4,parafi:5.3,kairi:38.1},
-  {name:"田口 紗妃",store:"050 ニッケパークタウン加古川",team:"グロース",tantou:"高橋",role:"",fi:15.2,para:35.2,parafi:6.7,kairi:28.5},
-  {name:"床次涼緒",store:"022 和泉府中",team:"グロース",tantou:"高橋",role:"",fi:14.6,para:27.1,parafi:18.8,kairi:8.3},
-  {name:"原千夏",store:"112 河内松原",team:"店舗支援",tantou:"岩下",role:"店長",fi:16.8,para:33.6,parafi:12.1,kairi:21.5},
-  {name:"荒井みゆき",store:"042 藤沢駅前",team:"店舗支援",tantou:"岩下",role:"",fi:25.3,para:63.9,parafi:4.8,kairi:59.1},
-  {name:"境 萌南",store:"131 津田沼駅前",team:"店舗支援",tantou:"岩下",role:"",fi:28.2,para:51.3,parafi:5.1,kairi:46.2},
-  {name:"森中 悠菜",store:"083 ミウィ橋本",team:"店舗支援",tantou:"岩下",role:"",fi:24.6,para:42.4,parafi:4.2,kairi:38.2},
-  {name:"中尾 愛海",store:"140 大橋駅前",team:"店舗支援",tantou:"岩下",role:"",fi:28.6,para:28.6,parafi:0.0,kairi:28.6},
-  {name:"箕谷苑未",store:"112 河内松原",team:"店舗支援",tantou:"岩下",role:"",fi:19.2,para:30.3,parafi:12.1,kairi:18.2},
-  {name:"土山 美加",store:"093 アスト津",team:"店舗支援",tantou:"岩下",role:"",fi:0.0,para:25.0,parafi:25.0,kairi:0.0},
-  {name:"乙野莉花",store:"027 枚方市駅前",team:"店舗支援",tantou:"林",role:"店長",fi:9.6,para:35.7,parafi:20.9,kairi:14.8},
-  {name:"橋本 さくら",store:"132 博多駅前",team:"店舗支援",tantou:"林",role:"",fi:28.0,para:60.0,parafi:0.0,kairi:60.0},
-  {name:"大田 桃加",store:"142 小倉駅前",team:"店舗支援",tantou:"林",role:"",fi:27.3,para:51.5,parafi:3.0,kairi:48.5},
-  {name:"尾西 和來",store:"049 テラッソ姫路",team:"店舗支援",tantou:"林",role:"",fi:23.5,para:48.7,parafi:10.1,kairi:38.6},
-  {name:"吉川 穂波",store:"030 なんば",team:"店舗支援",tantou:"林",role:"",fi:18.2,para:41.8,parafi:12.7,kairi:29.1},
-  {name:"北川 凜香",store:"005 大阪梅田",team:"店舗支援",tantou:"林",role:"",fi:20.0,para:35.0,parafi:10.0,kairi:25.0},
-  {name:"千葉愛子",store:"027 枚方市駅前",team:"店舗支援",tantou:"佐藤",role:"チーフ",fi:8.1,para:15.3,parafi:22.5,kairi:7.2},
-  {name:"髙橋 琉愛",store:"116 草加駅前",team:"店舗支援",tantou:"佐藤",role:"",fi:27.0,para:64.9,parafi:2.7,kairi:62.2},
-  {name:"榊原沙恵",store:"021 守口市駅",team:"店舗支援",tantou:"佐藤",role:"",fi:27.2,para:56.8,parafi:7.2,kairi:49.6},
-  {name:"難波 実結",store:"017 尼崎駅前",team:"店舗支援",tantou:"佐藤",role:"",fi:24.8,para:49.6,parafi:9.4,kairi:40.2},
-  {name:"入江蘭樹",store:"014 豊中駅前",team:"店舗支援",tantou:"佐藤",role:"",fi:25.6,para:41.9,parafi:7.8,kairi:34.1},
-  {name:"西門(山口)紗弥",store:"005 大阪梅田",team:"店舗支援",tantou:"佐藤",role:"",fi:15.0,para:28.0,parafi:9.0,kairi:19.0},
-  {name:"鬼塚朱里",store:"132 博多駅前",team:"店舗支援",tantou:"大竹",role:"チーフ",fi:4.0,para:13.3,parafi:18.7,kairi:5.4},
-  {name:"清水 玲",store:"069 中野南口",team:"店舗支援",tantou:"大竹",role:"",fi:28.4,para:64.2,parafi:0.0,kairi:64.2},
-  {name:"石井 凜那",store:"105 稲毛駅前",team:"店舗支援",tantou:"大竹",role:"",fi:14.5,para:50.9,parafi:1.8,kairi:49.1},
-  {name:"中島 千花",store:"007 上本町",team:"店舗支援",tantou:"大竹",role:"",fi:18.2,para:50.0,parafi:9.1,kairi:40.9},
-  {name:"上田 佳奈美",store:"007 上本町",team:"店舗支援",tantou:"大竹",role:"",fi:19.6,para:43.3,parafi:10.3,kairi:33.0},
-  {name:"西口 樹奈",store:"080 大和郡山",team:"店舗支援",tantou:"大竹",role:"",fi:16.4,para:32.8,parafi:13.1,kairi:19.7},
-  {name:"木村 綺音",store:"136 春日部駅前",team:"店舗支援",tantou:"秋田",role:"",fi:26.3,para:71.3,parafi:5.0,kairi:66.3},
-  {name:"中井川いぶき",store:"092 浦和西口",team:"店舗支援",tantou:"秋田",role:"",fi:27.6,para:59.0,parafi:6.7,kairi:52.3},
-  {name:"川畑 真美",store:"139 六甲道駅前",team:"店舗支援",tantou:"秋田",role:"",fi:20.5,para:49.3,parafi:6.8,kairi:42.5},
-  {name:"北林 真愛",store:"035 川崎駅前",team:"店舗支援",tantou:"秋田",role:"",fi:25.0,para:37.5,parafi:0.0,kairi:37.5},
-  {name:"深尾梨央",store:"049 テラッソ姫路",team:"店舗支援",tantou:"秋田",role:"",fi:20.9,para:41.0,parafi:13.4,kairi:27.6},
-  {name:"藤木 果希",store:"001 和歌山駅前",team:"店舗支援",tantou:"秋田",role:"",fi:0.0,para:0.0,parafi:0.0,kairi:0.0},
-  {name:"吉田 真香",store:"142 小倉駅前",team:"店舗支援",tantou:"三尾",role:"",fi:14.7,para:64.7,parafi:0.0,kairi:64.7},
-  {name:"齋藤安友美",store:"038 そよら湘南茅ヶ崎",team:"店舗支援",tantou:"三尾",role:"",fi:23.0,para:56.3,parafi:2.4,kairi:53.9},
-  {name:"山岡 亜耶",store:"084 草津エイスクエア",team:"店舗支援",tantou:"三尾",role:"",fi:21.2,para:48.5,parafi:6.1,kairi:42.4},
-  {name:"中森理菜",store:"049 テラッソ姫路",team:"店舗支援",tantou:"三尾",role:"",fi:26.8,para:45.1,parafi:7.3,kairi:37.8},
-  {name:"鶴田 恋子",store:"132 博多駅前",team:"店舗支援",tantou:"三尾",role:"",fi:17.9,para:39.3,parafi:12.5,kairi:26.8},
-  {name:"丹羽 梨絵香",store:"142 小倉駅前",team:"店舗支援",tantou:"三尾",role:"",fi:5.7,para:25.7,parafi:22.9,kairi:2.8},
-  {name:"中村 妃里",store:"129 浅草ROX",team:"店舗支援",tantou:"秋定",role:"",fi:31.0,para:67.9,parafi:3.6,kairi:64.3},
-  {name:"田村碧月渚",store:"038 そよら湘南茅ヶ崎",team:"店舗支援",tantou:"秋定",role:"",fi:30.7,para:60.6,parafi:3.9,kairi:56.7},
-  {name:"藤田 愛華",store:"052 箕面駅前",team:"店舗支援",tantou:"秋定",role:"",fi:22.0,para:53.0,parafi:12.0,kairi:41.0},
-  {name:"弥園歩美",store:"048 堺鳳おおとりウイングス",team:"店舗支援",tantou:"秋定",role:"",fi:25.4,para:45.9,parafi:9.0,kairi:36.9},
-  {name:"吉永真衣",store:"145 六本松駅前",team:"店舗支援",tantou:"秋定",role:"",fi:13.3,para:41.0,parafi:15.7,kairi:25.3},
-  {name:"村田梨夏",store:"132 博多駅前",team:"店舗支援",tantou:"秋定",role:"",fi:9.9,para:18.3,parafi:23.9,kairi:5.6},
-];
-
+let PARTNERS=[];
+async function loadPartners(){
+  try{
+    const res=await fetch(GAS_URL+'?type=partners');
+    const data=await res.json();
+    PARTNERS=data.map(p=>({
+      name:p.name,store:p.store,team:p.team,tantou:p.tantou,
+      role:p.role,fi:parseFloat(p.fi)||0,para:parseFloat(p.para)||0,
+      parafi:parseFloat(p.parafi)||0,kairi:parseFloat(p.kairi)||0
+    }));
+    sel.innerHTML='<option value="">選択してください</option>';
+    PARTNERS.forEach((p,i)=>{
+      const o=document.createElement('option');
+      o.value=i;
+      o.textContent=p.name+'（'+p.store+'）';
+      sel.appendChild(o);
+    });
+  }catch(e){console.error(e);}
+}
+loadPartners();
 const sel=document.getElementById('partner-select');
 PARTNERS.forEach((p,i)=>{
   const o=document.createElement('option');
@@ -301,6 +257,12 @@ function showPage(id,btn){
 const feelLabel={good:'良好',mid:'普通',bad:'要フォロー'};
 const typeLabel={type1:'乖離大・通常FI安定',type2:'乖離あり・一定数取れている',type3:'通常FI 10%未満'};
 
+function deleteRecord(id){
+  if(!confirm('この記録を削除しますか？')) return;
+  records=records.filter(r=>r.id!==id);
+  try{localStorage.setItem('mendan_v3',JSON.stringify(records));}catch(e){}
+  renderList();
+}
 function toggleDetail(id){
   const el=document.getElementById('d-'+id);
   const btn=document.getElementById('b-'+id);
