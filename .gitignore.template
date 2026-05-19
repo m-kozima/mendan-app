@@ -1,0 +1,52 @@
+# ============================================================
+# .gitignore 推奨追加項目
+# ============================================================
+# 既存の .gitignore に以下の項目を追加すること。
+# 既に記載されている項目があれば重複追加は不要。
+# ============================================================
+
+# シークレット・環境変数
+.env
+.env.local
+.env.development
+.env.production
+.env.*.local
+*.pem
+*.key
+credentials.json
+secrets.json
+secret.json
+
+# Claude Code 個人設定（プロジェクト共有設定 .claude/settings.json はコミットする）
+.claude/settings.local.json
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 開発用一時ファイル
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# ビルド成果物
+dist/
+build/
+.next/
+.nuxt/
+out/
+
+# Netlify
+.netlify/
+
+# CSV エクスポート・データバックアップ（個別プロジェクトで必要に応じ調整）
+*.csv.bak
+data-export/
+initial-data.json
+
+# IDE
+.vscode/settings.json
+.idea/
