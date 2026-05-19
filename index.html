@@ -219,7 +219,8 @@ function onPartnerChange(){
   else{tEl.style.display='none';}
 }
 
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbxlhZpXIi1Yl2Yj6BRUq4i99P_4TRYKJiF9hBxVRB2fEjb3I44pG9Mf4sXE9YxkazA/exec';let records=[];
+const GAS_URL ='https://script.google.com/macros/s/AKfycbxlhZpXIi1Yl2Yj6BRUq4i99P_4TRYKJiF9hBxVRB2fEjb3I44pG9Mf4sXE9YxkazA/exec';
+let records=[];
 try{const s=localStorage.getItem('mendan_v3');if(s)records=JSON.parse(s);}catch(e){}
 
 function saveRecord(){
@@ -287,6 +288,7 @@ function renderList(){
         <span class="${fc}">${feelLabel[r.feel]||r.feel}</span>
         <span class="badge ${kc}">乖離 ${r.kairi.toFixed(1)}pt</span>
         <button class="toggle-btn" id="b-${r.id}" onclick="toggleDetail(${r.id})">詳細を見る</button>
+<button class="toggle-btn" style="color:#A32D2D" onclick="deleteRecord(${r.id})">削除</button>
       </div>
       <div style="display:none" id="d-${r.id}">
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:10px">
