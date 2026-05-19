@@ -73,7 +73,7 @@ h1{font-size:16px;font-weight:500;margin-bottom:1rem;color:#1a1a1a}
     <div class="grid2">
       <div class="field">
         <label>担当者名 <span class="req">*</span></label>
-        <select id="tantousha">
+        <select id="tantousha"onchange="filterPartners()">
           <option value="">選択</option>
           <option>河本</option><option>小島</option><option>高橋</option><option>岩下</option>
           <option>林</option><option>佐藤</option><option>大竹</option><option>秋田</option>
@@ -87,16 +87,7 @@ h1{font-size:16px;font-weight:500;margin-bottom:1rem;color:#1a1a1a}
     </div>
     <div class="field">
       <label>パートナー名 <span class="req">*</span></label>
-     <div class="field">
-  <label>担当者で絞り込む</label>
-  <select id="filter-tantou-input" onchange="filterPartners()">
-    <option value="">全員</option>
-    <option>河本</option><option>小島</option><option>高橋</option><option>岩下</option>
-    <option>林</option><option>佐藤</option><option>大竹</option><option>秋田</option>
-    <option>三尾</option><option>秋定</option>
-  </select>
-</div>
- <select id="partner-select" onchange="onPartnerChange()">
+     <select id="partner-select" onchange="onPartnerChange()">
         <option value="">選択してください</option>
       </select>
     </div>
@@ -212,7 +203,7 @@ PARTNERS.forEach((p,i)=>{
 });
 
 function filterPartners(){
-  const tantou=document.getElementById('filter-tantou-input').value;
+  const tantou=document.getElementById('tantousha').value;
   const doneNames=records.map(r=>r.partnerName);
   const sel=document.getElementById('partner-select');
   sel.innerHTML='<option value="">選択してください</option>';
