@@ -263,7 +263,7 @@ function onPartnerChange(){
   else{tEl.style.display='none';}
 }
 
-let records=[];
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxlhZpXIi1Yl2Yj6BRUq4i99P_4TRYKJiF9hBxVRB2fEjb3I44pG9Mf4sXE9YxkazA/exec';let records=[];
 try{const s=localStorage.getItem('mendan_v3');if(s)records=JSON.parse(s);}catch(e){}
 
 function saveRecord(){
@@ -280,7 +280,7 @@ function saveRecord(){
   }
   const p=PARTNERS[pidx];
   records.unshift({id:Date.now(),tantou,date,partnerName:p.name,store:p.store,team:p.team,fi:p.fi,para:p.para,parafi:p.parafi,kairi:p.kairi,type:typeEl.value,shokai,kadai:document.getElementById('kadai').value,action,followup,feel:feelEl.value,tokki:document.getElementById('tokki').value});
-  try{localStorage.setItem('mendan_v3',JSON.stringify(records));}catch(e){}
+  try{localStorage.setItem('mendan_v3',JSON.stringify(records));}catch(e){}fetch(GAS_URL, {method:'POST', body:JSON.stringify(records[0])});
   const msg=document.getElementById('save-msg');
   msg.style.display='block';
   setTimeout(()=>{msg.style.display='none';},2000);
