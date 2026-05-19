@@ -219,7 +219,8 @@ function onPartnerChange(){
   else{tEl.style.display='none';}
 }
 
-const GAS_URL ='https://script.google.com/macros/s/AKfycbxlhZpXIi1Yl2Yj6BRUq4i99P_4TRYKJiF9hBxVRB2fEjb3I44pG9Mf4sXE9YxkazA/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxlhZpXIi1Yl2Yj6BRUq4i99P_4TRYKJiF9hBxVRB2fEjb3I44pG9Mf4sXE9YxkazA/exec';
+
 let records=[];
 try{const s=localStorage.getItem('mendan_v3');if(s)records=JSON.parse(s);}catch(e){}
 
