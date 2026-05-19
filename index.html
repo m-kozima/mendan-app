@@ -87,7 +87,16 @@ h1{font-size:16px;font-weight:500;margin-bottom:1rem;color:#1a1a1a}
     </div>
     <div class="field">
       <label>パートナー名 <span class="req">*</span></label>
-      <select id="partner-select" onchange="onPartnerChange()">
+     <div class="field">
+  <label>担当者で絞り込む</label>
+  <select id="filter-tantou-input" onchange="filterPartners()">
+    <option value="">全員</option>
+    <option>河本</option><option>小島</option><option>高橋</option><option>岩下</option>
+    <option>林</option><option>佐藤</option><option>大竹</option><option>秋田</option>
+    <option>三尾</option><option>秋定</option>
+  </select>
+</div>
+ <select id="partner-select" onchange="onPartnerChange()">
         <option value="">選択してください</option>
       </select>
     </div>
@@ -202,6 +211,20 @@ PARTNERS.forEach((p,i)=>{
   sel.appendChild(o);
 });
 
+function filterPartners(){
+  const tantou=document.getElementById('filter-tantou-input').value;
+  const doneNames=records.map(r=>r.partnerName);
+  const sel=document.getElementById('partner-select');
+  sel.innerHTML='<option value="">選択してください</option>';
+  PARTNERS.forEach((p,i)=>{
+    if(tantou && p.tantou!==tantou) return;
+    if(doneNames.includes(p.name)) return;
+    const o=document.createElement('option');
+    o.value=i;
+    o.textContent=p.name+'（'+p.store+'）';
+    sel.appendChild(o);
+  });
+}
 function onPartnerChange(){
   const idx=sel.value;
   const stats=document.getElementById('partner-stats');
