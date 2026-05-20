@@ -181,8 +181,8 @@ async function loadPartners(){
     const data=await res.json();
     PARTNERS=data.map(p=>({
       name:p.name,store:p.store,team:p.team,tantou:p.tantou,
-      role:p.role,fi:parseFloat(p.fi)||0,para:parseFloat(p.para)||0,
-      parafi:parseFloat(p.parafi)||0,kairi:parseFloat(p.kairi)||0
+      role:p.role,fi:parseFloat(p.fi)*100||0,para:parseFloat(p.para)*100||0,
+parafi:parseFloat(p.parafi)*100||0,kairi:parseFloat(p.kairi)*100||0
     }));
     sel.innerHTML='<option value="">選択してください</option>';
     PARTNERS.forEach((p,i)=>{
