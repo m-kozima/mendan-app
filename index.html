@@ -329,7 +329,7 @@ async function renderList() {
     if (!filtered.length) { c.innerHTML = '<div class="empty">該当する記録がありません</div>'; return; }
     c.innerHTML = filtered.map(function(r) {
       var fc = r.feel === 'good' ? 'tag-good' : r.feel === 'mid' ? 'tag-mid' : 'tag-bad';
-      var kv = parseFloat(r.kairi) * 100;
+      var kv = parseFloat(r.kairi);
       var kc = kv >= 20 ? 'badge-red' : kv >= 10 ? 'badge-amber' : 'badge-green';
       var fiv = (parseFloat(r.fi) * 100).toFixed(1);
       var pav = (parseFloat(r.para) * 100).toFixed(1);
