@@ -274,9 +274,13 @@ const typeLabel={type1:'乖離大・通常FI安定',type2:'乖離あり・一定
 
 function deleteRecord(id){
   if(!confirm('この記録を削除しますか？')) return;
-  records=records.filter(r=>r.id!==id);
-  try{localStorage.setItem('mendan_v3',JSON.stringify(records));}catch(e){}
-  renderList();
+  fetch(GAS_URL+'?type=delete&id='+id)
+    .then(()=>renderList());
+}
+
+function editRecord(id){
+  // 編集機能は今後追加予定
+  alert('修正機能は準備中です');
 }
 function toggleDetail(id){
   const el=document.getElementById('d-'+id);
@@ -286,12 +290,56 @@ function toggleDetail(id){
   btn.textContent=open?'閉じる':'詳細を見る';
 }
 
-function renderList(){
+async function renderList(){
   const ft=document.getElementById('filter-tantou').value;
   const ff=document.getElementById('filter-feel').value;
-  const filtered=records.filter(r=>(!ft||r.tantou===ft)&&(!ff||r.feel===ff));
   const c=document.getElementById('list-container');
-  if(!filtered.length){c.innerHTML='<div class="empty">まだ記録がありません</div>';return;}
+  c.innerHTML='<div class="empty">読み込み中...</div>';
+  try{
+    const res=await fetch(GAS_URL+'?type=records');
+    const rows=await res.json();
+    const headers=rows[0];
+    const data=rows.slice(1).map(row=>{
+      const obj={};
+      headers.forEach((h,i)=>obj[h]=row[i]);
+      return obj;
+    });
+    const filtered=data.filter(r=>(!ft||r.tantou===ft)&&(!ff||r.feel===ff));
+    if(!filtered.length){c.innerHTML='<div class="empty">まだ記録がありません</div>';return;}
+    c.innerHTML=filtered.map(r=>{
+      const fc=r.feel==='good'?'tag-good':r.feel==='mid'?'tag-mid':'tag-bad';
+      const kc=parseFloat(r.kairi)>=20?'badge-red':parseFloat(r.kairi)>=10?'badge-amber':'badge-green';
+      return `<div class="rec-card">
+        <div class="rec-name">${r.partnerName}</div>
+        <div class="rec-sub">${r.store}　担当：${r.tantou}</div>
+        <div class="rec-badges">
+          <span class="${fc}">${feelLabel[r.feel]||r.feel}</span>
+          <span class="badge ${kc}">乖離 ${parseFloat(r.kairi).toFixed(1)}pt</span>
+          <button class="toggle-btn" id="b-${r.id}" onclick="toggleDetail(${r.id})">詳細を見る</button>
+          <button class="toggle-btn" style="color:#185FA5" onclick="editRecord('${r.id}')">修正</button>
+          <button class="toggle-btn" style="color:#A32D2D" onclick="deleteRecord('${r.id}')">削除</button>
+        </div>
+        <div style="display:none" id="d-${r.id}">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:10px">
+            <div class="stat-card"><div class="stat-label">通常FI率</div><div class="stat-val" style="font-size:15px">${(parseFloat(r.fi)*100).toFixed(1)}%</div></div>
+            <div class="stat-card"><div class="stat-label">パラ獲得率</div><div class="stat-val" style="font-size:15px">${(parseFloat(r.para)*100).toFixed(1)}%</div></div>
+            <div class="stat-card"><div class="stat-label">パラFI率</div><div class="stat-val" style="font-size:15px">${(parseFloat(r.parafi)*100).toFixed(1)}%</div></div>
+          </div>
+          <div style="margin-top:8px"><span class="badge badge-purple">${typeLabel[r.type]||r.type}</span></div>
+          <div class="rec-body">
+            <div><div class="rec-row-label">現在の紹介状況</div><div class="rec-row-val">${r.shokai||'—'}</div></div>
+            ${r.kadai?`<div><div class="rec-row-label">課題・不安</div><div class="rec-row-val">${r.kadai}</div></div>`:''}
+            <div><div class="rec-row-label">設定したアクション</div><div class="rec-row-val">${r.action||'—'}</div></div>
+            ${r.tokki?`<div><div class="rec-row-label">特記事項</div><div class="rec-row-val">${r.tokki}</div></div>`:''}
+          </div>
+          <div class="rec-meta"><span>面談日：${r.date}</span><span>次回確認：${r.followup}</span></div>
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){
+    c.innerHTML='<div class="empty">データの読み込みに失敗しました</div>';
+  }
+}
   c.innerHTML=filtered.map(r=>{
     const fc=r.feel==='good'?'tag-good':r.feel==='mid'?'tag-mid':'tag-bad';
     const kc=r.kairi>=20?'badge-red':r.kairi>=10?'badge-amber':'badge-green';
