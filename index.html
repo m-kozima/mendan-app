@@ -73,7 +73,7 @@ h1{font-size:16px;font-weight:500;margin-bottom:1rem;color:#1a1a1a}
     <div class="grid2">
       <div class="field">
         <label>担当者名 <span class="req">*</span></label>
-        <select id="tantousha"onchange="filterPartners()">
+        <select id="tantousha" onchange="filterPartners()">
           <option value="">選択</option>
           <option>河本</option><option>小島</option><option>高橋</option><option>岩下</option>
           <option>林</option><option>佐藤</option><option>大竹</option><option>秋田</option>
@@ -87,7 +87,7 @@ h1{font-size:16px;font-weight:500;margin-bottom:1rem;color:#1a1a1a}
     </div>
     <div class="field">
       <label>パートナー名 <span class="req">*</span></label>
-     <select id="partner-select" onchange="onPartnerChange()">
+      <select id="partner-select" onchange="onPartnerChange()">
         <option value="">選択してください</option>
       </select>
     </div>
@@ -173,202 +173,198 @@ h1{font-size:16px;font-weight:500;margin-bottom:1rem;color:#1a1a1a}
 </div>
 
 <script>
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbxlhZpXIi1Yl2Yj6BRUq4i99P_4TRYKJiF9hBxVRB2fEjb3I44pG9Mf4sXE9YxkazA/exec';
-let PARTNERS=[];
-async function loadPartners(){
-  try{
-    const res=await fetch(GAS_URL+'?type=partners');
-    const data=await res.json();
-    PARTNERS=data.map(p=>({
-      name:p.name,store:p.store,team:p.team,tantou:p.tantou,
-      role:p.role,fi:parseFloat(p.fi)*100||0,para:parseFloat(p.para)*100||0,
-parafi:parseFloat(p.parafi)*100||0,kairi:parseFloat(p.kairi)*100||0
-    }));
-    sel.innerHTML='<option value="">選択してください</option>';
-    PARTNERS.forEach((p,i)=>{
-      const o=document.createElement('option');
-      o.value=i;
-      o.textContent=p.name+'（'+p.store+'）';
-      sel.appendChild(o);
+const GAS_URL = 'https://delicate-creponne-61cb78.netlify.app/';
+var PARTNERS = [];
+
+async function loadPartners() {
+  try {
+    var res = await fetch(GAS_URL + '?type=partners');
+    var data = await res.json();
+    PARTNERS = data.map(function(p) {
+      return {
+        name: p.name, store: p.store, team: p.team, tantou: p.tantou,
+        role: p.role,
+        fi: parseFloat(p.fi) * 100 || 0,
+        para: parseFloat(p.para) * 100 || 0,
+        parafi: parseFloat(p.parafi) * 100 || 0,
+        kairi: parseFloat(p.kairi) * 100 || 0
+      };
     });
-  }catch(e){console.error(e);}
+    filterPartners();
+  } catch(e) { console.error(e); }
 }
 loadPartners();
-const sel=document.getElementById('partner-select');
-PARTNERS.forEach((p,i)=>{
-  const o=document.createElement('option');
-  o.value=i;
-  o.textContent=p.name+'（'+p.store+'）';
-  sel.appendChild(o);
-});
 
-function filterPartners(){
-  const tantou=document.getElementById('tantousha').value;
-  const doneNames=records.map(r=>r.partnerName);
-  const sel=document.getElementById('partner-select');
-  sel.innerHTML='<option value="">選択してください</option>';
-  PARTNERS.forEach((p,i)=>{
-    if(tantou && p.tantou!==tantou) return;
-    if(doneNames.includes(p.name)) return;
-    const o=document.createElement('option');
-    o.value=i;
-    o.textContent=p.name+'（'+p.store+'）';
+function filterPartners() {
+  var tantou = document.getElementById('tantousha').value;
+  var doneNames = JSON.parse(localStorage.getItem('mendan_done') || '[]');
+  var sel = document.getElementById('partner-select');
+  sel.innerHTML = '<option value="">選択してください</option>';
+  PARTNERS.forEach(function(p, i) {
+    if (tantou && p.tantou !== tantou) return;
+    if (doneNames.indexOf(p.name) !== -1) return;
+    var o = document.createElement('option');
+    o.value = i;
+    o.textContent = p.name + '(' + p.store + ')';
     sel.appendChild(o);
   });
-}
-function onPartnerChange(){
-  const idx=sel.value;
-  const stats=document.getElementById('partner-stats');
-  if(idx===''){stats.style.display='none';return;}
-  const p=PARTNERS[idx];
-  stats.style.display='block';
-  document.getElementById('st-fi').textContent=p.fi.toFixed(1)+'%';
-  document.getElementById('st-para').textContent=p.para.toFixed(1)+'%';
-  document.getElementById('st-parafi').textContent=p.parafi.toFixed(1)+'%';
-  const kEl=document.getElementById('st-kairi');
-  kEl.textContent=p.kairi.toFixed(1)+'pt';
-  kEl.className='badge '+(p.kairi>=20?'badge-red':p.kairi>=10?'badge-amber':'badge-green');
-  document.getElementById('st-team').textContent=p.team;
-  const tEl=document.getElementById('st-type');
-  if(p.role){tEl.textContent=p.role;tEl.style.display='inline-block';}
-  else{tEl.style.display='none';}
+  document.getElementById('partner-stats').style.display = 'none';
 }
 
-let records=[];
-try{const s=localStorage.getItem('mendan_v3');if(s)records=JSON.parse(s);}catch(e){}
+function onPartnerChange() {
+  var idx = document.getElementById('partner-select').value;
+  var stats = document.getElementById('partner-stats');
+  if (idx === '') { stats.style.display = 'none'; return; }
+  var p = PARTNERS[idx];
+  stats.style.display = 'block';
+  document.getElementById('st-fi').textContent = p.fi.toFixed(1) + '%';
+  document.getElementById('st-para').textContent = p.para.toFixed(1) + '%';
+  document.getElementById('st-parafi').textContent = p.parafi.toFixed(1) + '%';
+  var kEl = document.getElementById('st-kairi');
+  kEl.textContent = p.kairi.toFixed(1) + 'pt';
+  kEl.className = 'badge ' + (p.kairi >= 20 ? 'badge-red' : p.kairi >= 10 ? 'badge-amber' : 'badge-green');
+  document.getElementById('st-team').textContent = p.team;
+  var tEl = document.getElementById('st-type');
+  if (p.role) { tEl.textContent = p.role; tEl.style.display = 'inline-block'; }
+  else { tEl.style.display = 'none'; }
+}
 
-function saveRecord(){
-  const tantou=document.getElementById('tantousha').value;
-  const date=document.getElementById('mendan-date').value;
-  const pidx=document.getElementById('partner-select').value;
-  const typeEl=document.querySelector('input[name="type"]:checked');
-  const shokai=document.getElementById('shokai').value;
-  const action=document.getElementById('action').value;
-  const followup=document.getElementById('followup-date').value;
-  const feelEl=document.querySelector('input[name="feel"]:checked');
-  if(!tantou||!date||pidx===''||!typeEl||!shokai||!action||!followup||!feelEl){
-    alert('必須項目（*）をすべて入力してください');return;
+async function saveRecord() {
+  var tantou = document.getElementById('tantousha').value;
+  var date = document.getElementById('mendan-date').value;
+  var pidx = document.getElementById('partner-select').value;
+  var typeEl = document.querySelector('input[name="type"]:checked');
+  var shokai = document.getElementById('shokai').value;
+  var action = document.getElementById('action').value;
+  var followup = document.getElementById('followup-date').value;
+  var feelEl = document.querySelector('input[name="feel"]:checked');
+  if (!tantou || !date || pidx === '' || !typeEl || !shokai || !action || !followup || !feelEl) {
+    alert('必須項目(*)をすべて入力してください'); return;
   }
-  const p=PARTNERS[pidx];
-  records.unshift({id:Date.now(),tantou,date,partnerName:p.name,store:p.store,team:p.team,fi:p.fi,para:p.para,parafi:p.parafi,kairi:p.kairi,type:typeEl.value,shokai,kadai:document.getElementById('kadai').value,action,followup,feel:feelEl.value,tokki:document.getElementById('tokki').value});
-  try{localStorage.setItem('mendan_v3',JSON.stringify(records));}catch(e){}fetch(GAS_URL, {method:'POST', body:JSON.stringify(records[0])});
-  const msg=document.getElementById('save-msg');
-  msg.style.display='block';
-  setTimeout(()=>{msg.style.display='none';},2000);
-  ['tantousha','mendan-date','shokai','kadai','action','followup-date','tokki'].forEach(id=>{document.getElementById(id).value='';});
-  document.getElementById('partner-select').value='';
-  document.getElementById('partner-stats').style.display='none';
-  document.querySelectorAll('input[name="type"],input[name="feel"]').forEach(r=>r.checked=false);
+  var p = PARTNERS[pidx];
+  var rec = {
+    id: Date.now(), tantou: tantou, date: date,
+    partnerName: p.name, store: p.store, team: p.team,
+    fi: p.fi, para: p.para, parafi: p.parafi, kairi: p.kairi,
+    type: typeEl.value, shokai: shokai,
+    kadai: document.getElementById('kadai').value,
+    action: action, followup: followup, feel: feelEl.value,
+    tokki: document.getElementById('tokki').value
+  };
+  try {
+    await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(rec) });
+    var done = JSON.parse(localStorage.getItem('mendan_done') || '[]');
+    done.push(p.name);
+    localStorage.setItem('mendan_done', JSON.stringify(done));
+  } catch(e) { console.error(e); }
+  var msg = document.getElementById('save-msg');
+  msg.style.display = 'block';
+  setTimeout(function() { msg.style.display = 'none'; }, 2000);
+  ['tantousha','mendan-date','shokai','kadai','action','followup-date','tokki'].forEach(function(id) {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('partner-select').value = '';
+  document.getElementById('partner-stats').style.display = 'none';
+  document.querySelectorAll('input[name="type"],input[name="feel"]').forEach(function(r) { r.checked = false; });
+  filterPartners();
 }
 
-function showPage(id,btn){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('page-'+id).classList.add('active');
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.nav-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.getElementById('page-' + id).classList.add('active');
   btn.classList.add('active');
-  if(id==='list')renderList();
+  if (id === 'list') renderList();
 }
 
-const feelLabel={good:'良好',mid:'普通',bad:'要フォロー'};
-const typeLabel={type1:'乖離大・通常FI安定',type2:'乖離あり・一定数取れている',type3:'通常FI 10%未満'};
+var feelLabel = { good: '良好', mid: '普通', bad: '要フォロー' };
+var typeLabel = { type1: '乖離大・通常FI安定', type2: '乖離あり・一定数取れている', type3: '通常FI 10%未満' };
 
-function deleteRecord(id){
-  if(!confirm('この記録を削除しますか？')) return;
-  fetch(GAS_URL+'?type=delete&id='+id)
-    .then(()=>renderList());
+function toggleDetail(id) {
+  var el = document.getElementById('d-' + id);
+  var btn = document.getElementById('b-' + id);
+  var open = el.style.display === 'none';
+  el.style.display = open ? 'block' : 'none';
+  btn.textContent = open ? '閉じる' : '詳細を見る';
 }
 
-function editRecord(id){
-  // 編集機能は今後追加予定
-  alert('修正機能は準備中です');
-}
-function toggleDetail(id){
-  const el=document.getElementById('d-'+id);
-  const btn=document.getElementById('b-'+id);
-  const open=el.style.display==='none';
-  el.style.display=open?'block':'none';
-  btn.textContent=open?'閉じる':'詳細を見る';
+function deleteRecord(id) {
+  if (!confirm('この記録を削除しますか？')) return;
+  fetch(GAS_URL + '?type=delete&id=' + id).then(function() { renderList(); });
 }
 
-async function renderList(){
-  const ft=document.getElementById('filter-tantou').value;
-  const ff=document.getElementById('filter-feel').value;
-  const c=document.getElementById('list-container');
-  c.innerHTML='<div class="empty">読み込み中...</div>';
-  try{
-    const res=await fetch(GAS_URL+'?type=records');
-    const rows=await res.json();
-    const headers=rows[0];
-    const data=rows.slice(1).map(row=>{
-      const obj={};
-      headers.forEach((h,i)=>obj[h]=row[i]);
+function editRecord(id, date, feel, shokai, kadai, action, followup, tokki) {
+  document.querySelectorAll('.nav-btn')[0].click();
+  setTimeout(function() {
+    document.getElementById('mendan-date').value = date;
+    document.getElementById('shokai').value = shokai || '';
+    document.getElementById('kadai').value = kadai || '';
+    document.getElementById('action').value = action || '';
+    document.getElementById('followup-date').value = followup;
+    document.getElementById('tokki').value = tokki || '';
+    var feelRadio = document.querySelector('input[name="feel"][value="' + feel + '"]');
+    if (feelRadio) feelRadio.checked = true;
+    alert('内容を修正して「面談結果を保存」を押してください。\n修正後は古いデータをスプレッドシートから手動で削除してください。');
+  }, 300);
+}
+
+async function renderList() {
+  var ft = document.getElementById('filter-tantou').value;
+  var ff = document.getElementById('filter-feel').value;
+  var c = document.getElementById('list-container');
+  c.innerHTML = '<div class="empty">読み込み中...</div>';
+  try {
+    var res = await fetch(GAS_URL + '?type=records');
+    var rows = await res.json();
+    if (!rows || rows.length <= 1) { c.innerHTML = '<div class="empty">まだ記録がありません</div>'; return; }
+    var headers = rows[0];
+    var data = rows.slice(1).map(function(row) {
+      var obj = {};
+      headers.forEach(function(h, i) { obj[h] = row[i]; });
       return obj;
     });
-    const filtered=data.filter(r=>(!ft||r.tantou===ft)&&(!ff||r.feel===ff));
-    if(!filtered.length){c.innerHTML='<div class="empty">まだ記録がありません</div>';return;}
-    c.innerHTML=filtered.map(r=>{
-      const fc=r.feel==='good'?'tag-good':r.feel==='mid'?'tag-mid':'tag-bad';
-      const kc=parseFloat(r.kairi)>=20?'badge-red':parseFloat(r.kairi)>=10?'badge-amber':'badge-green';
-      return `<div class="rec-card">
-        <div class="rec-name">${r.partnerName}</div>
-        <div class="rec-sub">${r.store}　担当：${r.tantou}</div>
-        <div class="rec-badges">
-          <span class="${fc}">${feelLabel[r.feel]||r.feel}</span>
-          <span class="badge ${kc}">乖離 ${parseFloat(r.kairi).toFixed(1)}pt</span>
-          <button class="toggle-btn" id="b-${r.id}" onclick="toggleDetail(${r.id})">詳細を見る</button>
-          <button class="toggle-btn" style="color:#185FA5" onclick="editRecord('${r.id}')">修正</button>
-          <button class="toggle-btn" style="color:#A32D2D" onclick="deleteRecord('${r.id}')">削除</button>
-        </div>
-        <div style="display:none" id="d-${r.id}">
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:10px">
-            <div class="stat-card"><div class="stat-label">通常FI率</div><div class="stat-val" style="font-size:15px">${(parseFloat(r.fi)*100).toFixed(1)}%</div></div>
-            <div class="stat-card"><div class="stat-label">パラ獲得率</div><div class="stat-val" style="font-size:15px">${(parseFloat(r.para)*100).toFixed(1)}%</div></div>
-            <div class="stat-card"><div class="stat-label">パラFI率</div><div class="stat-val" style="font-size:15px">${(parseFloat(r.parafi)*100).toFixed(1)}%</div></div>
-          </div>
-          <div style="margin-top:8px"><span class="badge badge-purple">${typeLabel[r.type]||r.type}</span></div>
-          <div class="rec-body">
-            <div><div class="rec-row-label">現在の紹介状況</div><div class="rec-row-val">${r.shokai||'—'}</div></div>
-            ${r.kadai?`<div><div class="rec-row-label">課題・不安</div><div class="rec-row-val">${r.kadai}</div></div>`:''}
-            <div><div class="rec-row-label">設定したアクション</div><div class="rec-row-val">${r.action||'—'}</div></div>
-            ${r.tokki?`<div><div class="rec-row-label">特記事項</div><div class="rec-row-val">${r.tokki}</div></div>`:''}
-          </div>
-          <div class="rec-meta"><span>面談日：${r.date}</span><span>次回確認：${r.followup}</span></div>
-        </div>
-      </div>`;
+    var filtered = data.filter(function(r) {
+      return (!ft || r.tantou === ft) && (!ff || r.feel === ff);
+    });
+    if (!filtered.length) { c.innerHTML = '<div class="empty">該当する記録がありません</div>'; return; }
+    c.innerHTML = filtered.map(function(r) {
+      var fc = r.feel === 'good' ? 'tag-good' : r.feel === 'mid' ? 'tag-mid' : 'tag-bad';
+      var kv = parseFloat(r.kairi) * 100;
+      var kc = kv >= 20 ? 'badge-red' : kv >= 10 ? 'badge-amber' : 'badge-green';
+      var fiv = (parseFloat(r.fi) * 100).toFixed(1);
+      var pav = (parseFloat(r.para) * 100).toFixed(1);
+      var pfv = (parseFloat(r.parafi) * 100).toFixed(1);
+      return '<div class="rec-card">' +
+        '<div class="rec-name">' + r.partnerName + '</div>' +
+        '<div class="rec-sub">' + r.store + ' 担当：' + r.tantou + '</div>' +
+        '<div class="rec-badges">' +
+          '<span class="' + fc + '">' + (feelLabel[r.feel] || r.feel) + '</span>' +
+          '<span class="badge ' + kc + '">乖離 ' + kv.toFixed(1) + 'pt</span>' +
+          '<button class="toggle-btn" id="b-' + r.id + '" onclick="toggleDetail(' + r.id + ')">詳細を見る</button>' +
+          '<button class="toggle-btn" style="color:#185FA5" onclick="editRecord(' + r.id + ',\'' + r.date + '\',\'' + r.feel + '\',\'' + (r.shokai||'').replace(/\'/g,"&#39;") + '\',\'' + (r.kadai||'').replace(/\'/g,"&#39;") + '\',\'' + (r.action||'').replace(/\'/g,"&#39;") + '\',\'' + r.followup + '\',\'' + (r.tokki||'').replace(/\'/g,"&#39;") + '\')">修正</button>' +
+          '<button class="toggle-btn" style="color:#A32D2D" onclick="deleteRecord(' + r.id + ')">削除</button>' +
+        '</div>' +
+        '<div style="display:none" id="d-' + r.id + '">' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:10px">' +
+            '<div class="stat-card"><div class="stat-label">通常FI率</div><div class="stat-val" style="font-size:15px">' + fiv + '%</div></div>' +
+            '<div class="stat-card"><div class="stat-label">パラ獲得率</div><div class="stat-val" style="font-size:15px">' + pav + '%</div></div>' +
+            '<div class="stat-card"><div class="stat-label">パラFI率</div><div class="stat-val" style="font-size:15px">' + pfv + '%</div></div>' +
+          '</div>' +
+          '<div style="margin-top:8px"><span class="badge badge-purple">' + (typeLabel[r.type] || r.type) + '</span></div>' +
+          '<div class="rec-body">' +
+            '<div><div class="rec-row-label">現在の紹介状況</div><div class="rec-row-val">' + (r.shokai || '—') + '</div></div>' +
+            (r.kadai ? '<div><div class="rec-row-label">課題・不安</div><div class="rec-row-val">' + r.kadai + '</div></div>' : '') +
+            '<div><div class="rec-row-label">設定したアクション</div><div class="rec-row-val">' + (r.action || '—') + '</div></div>' +
+            (r.tokki ? '<div><div class="rec-row-label">特記事項</div><div class="rec-row-val">' + r.tokki + '</div></div>' : '') +
+          '</div>' +
+          '<div class="rec-meta"><span>面談日：' + r.date + '</span><span>次回確認：' + r.followup + '</span></div>' +
+        '</div>' +
+      '</div>';
     }).join('');
-  }catch(e){
-    c.innerHTML='<div class="empty">データの読み込みに失敗しました</div>';
+  } catch(e) {
+    c.innerHTML = '<div class="empty">データの読み込みに失敗しました</div>';
+    console.error(e);
   }
-}
-  c.innerHTML=filtered.map(r=>{
-    const fc=r.feel==='good'?'tag-good':r.feel==='mid'?'tag-mid':'tag-bad';
-    const kc=r.kairi>=20?'badge-red':r.kairi>=10?'badge-amber':'badge-green';
-    return `<div class="rec-card">
-      <div class="rec-name">${r.partnerName}</div>
-      <div class="rec-sub">${r.store}　担当：${r.tantou}</div>
-      <div class="rec-badges">
-        <span class="${fc}">${feelLabel[r.feel]||r.feel}</span>
-        <span class="badge ${kc}">乖離 ${r.kairi.toFixed(1)}pt</span>
-        <button class="toggle-btn" id="b-${r.id}" onclick="toggleDetail(${r.id})">詳細を見る</button>
-<button class="toggle-btn" style="color:#A32D2D" onclick="deleteRecord(${r.id})">削除</button>
-      </div>
-      <div style="display:none" id="d-${r.id}">
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:10px">
-          <div class="stat-card"><div class="stat-label">通常FI率</div><div class="stat-val" style="font-size:15px">${r.fi.toFixed(1)}%</div></div>
-          <div class="stat-card"><div class="stat-label">パラ獲得率</div><div class="stat-val" style="font-size:15px">${r.para.toFixed(1)}%</div></div>
-          <div class="stat-card"><div class="stat-label">パラFI率</div><div class="stat-val" style="font-size:15px">${r.parafi.toFixed(1)}%</div></div>
-        </div>
-        <div style="margin-top:8px"><span class="badge badge-purple">${typeLabel[r.type]||r.type}</span></div>
-        <div class="rec-body">
-          <div><div class="rec-row-label">現在の紹介状況</div><div class="rec-row-val">${r.shokai||'—'}</div></div>
-          ${r.kadai?`<div><div class="rec-row-label">課題・不安</div><div class="rec-row-val">${r.kadai}</div></div>`:''}
-          <div><div class="rec-row-label">設定したアクション</div><div class="rec-row-val">${r.action||'—'}</div></div>
-          ${r.tokki?`<div><div class="rec-row-label">特記事項</div><div class="rec-row-val">${r.tokki}</div></div>`:''}
-        </div>
-        <div class="rec-meta"><span>面談日：${r.date}</span><span>次回確認：${r.followup}</span></div>
-      </div>
-    </div>`;
-  }).join('');
 }
 </script>
 </body>
