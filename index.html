@@ -36,16 +36,21 @@ body{font-family:sans-serif;font-size:15px;color:#1a1a1a;background:#f5f5f0;padd
 .badge-green{background:#EAF3DE;color:#3B6D11}
 .badge-purple{background:#EEEDFE;color:#3C3489}
 .badge-blue{background:#E6F1FB;color:#185FA5}
+.badge-gray{background:#F0F0F0;color:#555}
 .partner-info{background:#EEEDFE;border-radius:8px;padding:10px 12px;margin-bottom:0.75rem}
 .partner-info-title{font-size:11px;font-weight:500;color:#3C3489;margin-bottom:6px}
 .tag-good{background:#EAF3DE;color:#3B6D11;font-size:11px;padding:2px 8px;border-radius:6px;font-weight:500;white-space:nowrap}
 .tag-mid{background:#FAEEDA;color:#854F0B;font-size:11px;padding:2px 8px;border-radius:6px;font-weight:500;white-space:nowrap}
 .tag-bad{background:#FCEBEB;color:#A32D2D;font-size:11px;padding:2px 8px;border-radius:6px;font-weight:500;white-space:nowrap}
+.tag-achieved{background:#EAF3DE;color:#3B6D11;font-size:11px;padding:2px 8px;border-radius:6px;font-weight:500;white-space:nowrap}
+.tag-recheck{background:#FCEBEB;color:#A32D2D;font-size:11px;padding:2px 8px;border-radius:6px;font-weight:500;white-space:nowrap}
+.tag-progress{background:#FAEEDA;color:#854F0B;font-size:11px;padding:2px 8px;border-radius:6px;font-weight:500;white-space:nowrap}
 .btn-primary{background:#534AB7;color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:500;cursor:pointer;width:100%}
 .btn-primary:hover{background:#3C3489}
 .filter-row{display:flex;gap:6px;margin-bottom:0.75rem;flex-wrap:wrap}
 .filter-row select{font-size:13px;padding:6px 8px;border:1px solid #ccc;border-radius:8px;flex:1}
 .rec-card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:0.875rem 1rem;margin-bottom:8px}
+.rec-card.recheck{border-left:4px solid #A32D2D}
 .rec-name{font-size:14px;font-weight:500}
 .rec-sub{font-size:12px;color:#666;margin-top:1px;line-height:1.4}
 .rec-badges{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-top:6px}
@@ -57,6 +62,8 @@ body{font-family:sans-serif;font-size:15px;color:#1a1a1a;background:#f5f5f0;padd
 .empty{text-align:center;padding:2rem;color:#888;font-size:13px}
 .save-msg{text-align:center;font-size:13px;color:#3B6D11;margin-top:8px;display:none}
 h1{font-size:16px;font-weight:500;margin-bottom:1rem;color:#1a1a1a}
+.target-info{background:#FFF3E0;border-radius:8px;padding:10px 12px;margin-bottom:0.75rem;font-size:12px}
+.target-info-title{font-weight:500;color:#854F0B;margin-bottom:4px}
 </style>
 </head>
 <body>
@@ -64,9 +71,11 @@ h1{font-size:16px;font-weight:500;margin-bottom:1rem;color:#1a1a1a}
 <h1>パラジェル個別面談 記録アプリ</h1>
 <div class="nav">
   <button class="nav-btn active" onclick="showPage('input',this)">面談を記録</button>
+  <button class="nav-btn" onclick="showPage('followup',this)">フォローアップ</button>
   <button class="nav-btn" onclick="showPage('list',this)">一覧・確認</button>
 </div>
 
+<!-- 面談記録タブ -->
 <div id="page-input" class="page active">
   <div class="card">
     <div class="section-title">基本情報</div>
@@ -106,7 +115,6 @@ h1{font-size:16px;font-weight:500;margin-bottom:1rem;color:#1a1a1a}
       </div>
     </div>
   </div>
-
   <div class="card">
     <div class="section-title">面談内容</div>
     <div class="field">
@@ -134,7 +142,6 @@ h1{font-size:16px;font-weight:500;margin-bottom:1rem;color:#1a1a1a}
       <p class="hint">推奨：2週間以内</p>
     </div>
   </div>
-
   <div class="card">
     <div class="section-title">担当者所感</div>
     <div class="field">
@@ -148,11 +155,79 @@ h1{font-size:16px;font-weight:500;margin-bottom:1rem;color:#1a1a1a}
       <textarea id="tokki" placeholder="チームで共有しておきたいこと、次回面談時の注意点など"></textarea>
     </div>
   </div>
-
   <button class="btn-primary" onclick="saveRecord()">面談結果を保存</button>
   <div class="save-msg" id="save-msg">保存しました！</div>
 </div>
 
+<!-- フォローアップタブ -->
+<div id="page-followup" class="page">
+  <div class="card">
+    <div class="section-title">基本情報</div>
+    <div class="grid2">
+      <div class="field">
+        <label>担当者名 <span class="req">*</span></label>
+        <select id="fu-tantou">
+          <option value="">選択</option>
+          <option>河本</option><option>小島</option><option>高橋</option><option>岩下</option>
+          <option>林</option><option>佐藤</option><option>大竹</option><option>秋田</option>
+          <option>三尾</option><option>秋定</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>確認日 <span class="req">*</span></label>
+        <input type="date" id="fu-date">
+      </div>
+    </div>
+    <div class="field">
+      <label>パートナー名 <span class="req">*</span></label>
+      <select id="fu-partner" onchange="onFuPartnerChange()">
+        <option value="">選択してください</option>
+      </select>
+    </div>
+    <div id="fu-partner-info" style="display:none" class="partner-info">
+      <div class="partner-info-title">パートナー情報</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <span id="fu-rank" class="badge badge-gray"></span>
+        <span style="font-size:12px;color:#3C3489">目標合計FI率：</span>
+        <span id="fu-target" class="badge badge-amber"></span>
+        <span style="font-size:12px;color:#3C3489">再面談基準：</span>
+        <span id="fu-recheck" class="badge badge-red"></span>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="section-title">数値確認</div>
+    <div class="field">
+      <label>現在の合計FI率（%） <span class="req">*</span></label>
+      <input type="number" id="fu-current-fi" placeholder="例：48.5" step="0.1" oninput="checkAchievement()">
+      <p class="hint">最新の数値を入力してください</p>
+    </div>
+    <div id="fu-status-box" style="display:none;margin-top:8px"></div>
+  </div>
+  <div class="card">
+    <div class="section-title">フォローアップ内容</div>
+    <div class="field">
+      <label>改善できた点 <span class="req">*</span></label>
+      <textarea id="fu-improved" placeholder="前回面談から改善できたこと、できるようになったこと"></textarea>
+    </div>
+    <div class="field">
+      <label>改善できなかった点・残課題</label>
+      <textarea id="fu-not-improved" placeholder="まだ改善できていないこと、引き続き課題になっていること"></textarea>
+    </div>
+    <div class="field">
+      <label>次回アクション・申し送り</label>
+      <textarea id="fu-next-action" placeholder="目標未達の場合：次回面談の方針など"></textarea>
+    </div>
+    <div class="field">
+      <label>次回確認予定日</label>
+      <input type="date" id="fu-next-date">
+    </div>
+  </div>
+  <button class="btn-primary" onclick="saveFollowup()">フォローアップを保存</button>
+  <div class="save-msg" id="fu-save-msg">保存しました！</div>
+</div>
+
+<!-- 一覧タブ -->
 <div id="page-list" class="page">
   <div class="filter-row">
     <select id="filter-tantou" onchange="renderList()">
@@ -167,6 +242,12 @@ h1{font-size:16px;font-weight:500;margin-bottom:1rem;color:#1a1a1a}
       <option value="mid">普通</option>
       <option value="bad">要フォロー</option>
     </select>
+    <select id="filter-status" onchange="renderList()">
+      <option value="">状況：すべて</option>
+      <option value="recheck">再面談対象</option>
+      <option value="achieved">目標達成</option>
+      <option value="progress">対応中</option>
+    </select>
   </div>
   <div id="list-container"></div>
 </div>
@@ -176,21 +257,45 @@ h1{font-size:16px;font-weight:500;margin-bottom:1rem;color:#1a1a1a}
 const GAS_URL = '/.netlify/functions/proxy';
 var PARTNERS = [];
 
+// ランク別目標値
+var RANK_TARGETS = {
+  '●': 45, '★': 48, '☆': 51, '■': 54, '□': 57, 'T': 60
+};
+
+function getRankFromName(name) {
+  if (!name) return 'T';
+  var first = name.charAt(0);
+  if (['●','★','☆','■','□'].indexOf(first) !== -1) return first;
+  return 'T';
+}
+
+function getTarget(rank) {
+  return RANK_TARGETS[rank] || 60;
+}
+
+function getRecheckThreshold(rank) {
+  return getTarget(rank) - 20;
+}
+
 async function loadPartners() {
   try {
     var res = await fetch(GAS_URL + '?type=partners');
     var data = await res.json();
     PARTNERS = data.map(function(p) {
+      var rank = getRankFromName(p.name);
       return {
         name: p.name, store: p.store, team: p.team, tantou: p.tantou,
-        role: p.role,
+        role: p.role, rank: rank,
         fi: parseFloat(p.fi) * 100 || 0,
         para: parseFloat(p.para) * 100 || 0,
         parafi: parseFloat(p.parafi) * 100 || 0,
-        kairi: parseFloat(p.kairi) * 100 || 0
+        kairi: parseFloat(p.kairi) * 100 || 0,
+        target: getTarget(rank),
+        recheck: getRecheckThreshold(rank)
       };
     });
     filterPartners();
+    loadFuPartners();
   } catch(e) { console.error(e); }
 }
 loadPartners();
@@ -211,6 +316,17 @@ function filterPartners() {
   document.getElementById('partner-stats').style.display = 'none';
 }
 
+function loadFuPartners() {
+  var sel = document.getElementById('fu-partner');
+  sel.innerHTML = '<option value="">選択してください</option>';
+  PARTNERS.forEach(function(p, i) {
+    var o = document.createElement('option');
+    o.value = i;
+    o.textContent = p.name + '(' + p.store + ')';
+    sel.appendChild(o);
+  });
+}
+
 function onPartnerChange() {
   var idx = document.getElementById('partner-select').value;
   var stats = document.getElementById('partner-stats');
@@ -227,6 +343,35 @@ function onPartnerChange() {
   var tEl = document.getElementById('st-type');
   if (p.role) { tEl.textContent = p.role; tEl.style.display = 'inline-block'; }
   else { tEl.style.display = 'none'; }
+}
+
+function onFuPartnerChange() {
+  var idx = document.getElementById('fu-partner').value;
+  var info = document.getElementById('fu-partner-info');
+  if (idx === '') { info.style.display = 'none'; return; }
+  var p = PARTNERS[idx];
+  info.style.display = 'block';
+  var rankLabel = p.rank === 'T' ? 'トップ' : p.rank;
+  document.getElementById('fu-rank').textContent = 'ランク：' + rankLabel;
+  document.getElementById('fu-target').textContent = p.target + '%以上';
+  document.getElementById('fu-recheck').textContent = p.recheck + '%未満で再面談';
+  checkAchievement();
+}
+
+function checkAchievement() {
+  var idx = document.getElementById('fu-partner').value;
+  var fi = parseFloat(document.getElementById('fu-current-fi').value);
+  var box = document.getElementById('fu-status-box');
+  if (idx === '' || isNaN(fi)) { box.style.display = 'none'; return; }
+  var p = PARTNERS[idx];
+  box.style.display = 'block';
+  if (fi >= p.target) {
+    box.innerHTML = '<span class="tag-achieved">目標達成！ 面談対応完了</span><span style="font-size:12px;color:#3B6D11;margin-left:8px">' + fi.toFixed(1) + '% >= 目標' + p.target + '%</span>';
+  } else if (fi < p.recheck) {
+    box.innerHTML = '<span class="tag-recheck">再面談対象</span><span style="font-size:12px;color:#A32D2D;margin-left:8px">' + fi.toFixed(1) + '% < 再面談基準' + p.recheck + '%</span>';
+  } else {
+    box.innerHTML = '<span class="tag-progress">対応中（目標未達）</span><span style="font-size:12px;color:#854F0B;margin-left:8px">' + fi.toFixed(1) + '% / 目標' + p.target + '%（あと' + (p.target - fi).toFixed(1) + 'pt）</span>';
+  }
 }
 
 async function saveRecord() {
@@ -269,6 +414,44 @@ async function saveRecord() {
   filterPartners();
 }
 
+async function saveFollowup() {
+  var tantou = document.getElementById('fu-tantou').value;
+  var date = document.getElementById('fu-date').value;
+  var pidx = document.getElementById('fu-partner').value;
+  var currentFI = document.getElementById('fu-current-fi').value;
+  var improved = document.getElementById('fu-improved').value;
+  if (!tantou || !date || pidx === '' || !currentFI || !improved) {
+    alert('必須項目(*)をすべて入力してください'); return;
+  }
+  var p = PARTNERS[pidx];
+  var fi = parseFloat(currentFI);
+  var status = fi >= p.target ? 'achieved' : fi < p.recheck ? 'recheck' : 'progress';
+  var rec = {
+    type: 'followup',
+    id: Date.now(),
+    tantou: tantou, date: date,
+    partnerName: p.name, store: p.store,
+    rank: p.rank, currentFI: fi,
+    targetFI: p.target, status: status,
+    improved: improved,
+    notImproved: document.getElementById('fu-not-improved').value,
+    nextAction: document.getElementById('fu-next-action').value,
+    followup: document.getElementById('fu-next-date').value
+  };
+  try {
+    await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(rec) });
+  } catch(e) { console.error(e); }
+  var msg = document.getElementById('fu-save-msg');
+  msg.style.display = 'block';
+  setTimeout(function() { msg.style.display = 'none'; }, 2000);
+  ['fu-tantou','fu-date','fu-current-fi','fu-improved','fu-not-improved','fu-next-action','fu-next-date'].forEach(function(id) {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('fu-partner').value = '';
+  document.getElementById('fu-partner-info').style.display = 'none';
+  document.getElementById('fu-status-box').style.display = 'none';
+}
+
 function showPage(id, btn) {
   document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
   document.querySelectorAll('.nav-btn').forEach(function(b) { b.classList.remove('active'); });
@@ -279,6 +462,7 @@ function showPage(id, btn) {
 
 var feelLabel = { good: '良好', mid: '普通', bad: '要フォロー' };
 var typeLabel = { type1: '乖離大・通常FI安定', type2: '乖離あり・一定数取れている', type3: '通常FI 10%未満' };
+var statusLabel = { achieved: '目標達成', recheck: '再面談対象', progress: '対応中' };
 
 function toggleDetail(id) {
   var el = document.getElementById('d-' + id);
@@ -311,11 +495,29 @@ function editRecord(id, date, feel, shokai, kadai, action, followup, tokki) {
 async function renderList() {
   var ft = document.getElementById('filter-tantou').value;
   var ff = document.getElementById('filter-feel').value;
+  var fs = document.getElementById('filter-status').value;
   var c = document.getElementById('list-container');
   c.innerHTML = '<div class="empty">読み込み中...</div>';
   try {
+    // 面談記録とフォローアップを両方取得
     var res = await fetch(GAS_URL + '?type=records');
     var rows = await res.json();
+    var fuRes = await fetch(GAS_URL + '?type=followup');
+    var fuRows = await fuRes.json();
+
+    // フォローアップデータをパートナー名でインデックス化
+    var fuMap = {};
+    if (fuRows && fuRows.length > 1) {
+      var fuHeaders = fuRows[0];
+      fuRows.slice(1).forEach(function(row) {
+        var obj = {};
+        fuHeaders.forEach(function(h, i) { obj[h] = row[i]; });
+        if (!fuMap[obj.partnerName] || obj.date > fuMap[obj.partnerName].date) {
+          fuMap[obj.partnerName] = obj;
+        }
+      });
+    }
+
     if (!rows || rows.length <= 1) { c.innerHTML = '<div class="empty">まだ記録がありません</div>'; return; }
     var headers = rows[0];
     var data = rows.slice(1).map(function(row) {
@@ -323,23 +525,41 @@ async function renderList() {
       headers.forEach(function(h, i) { obj[h] = row[i]; });
       return obj;
     });
+
     var filtered = data.filter(function(r) {
-      return (!ft || r.tantou === ft) && (!ff || r.feel === ff);
+      if (ft && r.tantou !== ft) return false;
+      if (ff && r.feel !== ff) return false;
+      if (fs) {
+        var fu = fuMap[r.partnerName];
+        var recStatus = fu ? fu.status : 'progress';
+        if (recStatus !== fs) return false;
+      }
+      return true;
     });
+
     if (!filtered.length) { c.innerHTML = '<div class="empty">該当する記録がありません</div>'; return; }
     c.innerHTML = filtered.map(function(r) {
       var fc = r.feel === 'good' ? 'tag-good' : r.feel === 'mid' ? 'tag-mid' : 'tag-bad';
-      var kv = parseFloat(r.kairi);
+      var kv = parseFloat(r.kairi) * 100;
       var kc = kv >= 20 ? 'badge-red' : kv >= 10 ? 'badge-amber' : 'badge-green';
       var fiv = (parseFloat(r.fi) * 100).toFixed(1);
       var pav = (parseFloat(r.para) * 100).toFixed(1);
       var pfv = (parseFloat(r.parafi) * 100).toFixed(1);
-      return '<div class="rec-card">' +
+      var fu = fuMap[r.partnerName];
+      var statusBadge = '';
+      var cardClass = 'rec-card';
+      if (fu) {
+        if (fu.status === 'achieved') statusBadge = '<span class="tag-achieved">目標達成</span>';
+        else if (fu.status === 'recheck') { statusBadge = '<span class="tag-recheck">再面談対象</span>'; cardClass = 'rec-card recheck'; }
+        else statusBadge = '<span class="tag-progress">対応中</span>';
+      }
+      return '<div class="' + cardClass + '">' +
         '<div class="rec-name">' + r.partnerName + '</div>' +
         '<div class="rec-sub">' + r.store + ' 担当：' + r.tantou + '</div>' +
         '<div class="rec-badges">' +
           '<span class="' + fc + '">' + (feelLabel[r.feel] || r.feel) + '</span>' +
           '<span class="badge ' + kc + '">乖離 ' + kv.toFixed(1) + 'pt</span>' +
+          (statusBadge ? statusBadge : '<span class="badge badge-gray">未フォローアップ</span>') +
           '<button class="toggle-btn" id="b-' + r.id + '" onclick="toggleDetail(' + r.id + ')">詳細を見る</button>' +
           '<button class="toggle-btn" style="color:#185FA5" onclick="editRecord(' + r.id + ',\'' + r.date + '\',\'' + r.feel + '\',\'' + (r.shokai||'').replace(/\'/g,"&#39;") + '\',\'' + (r.kadai||'').replace(/\'/g,"&#39;") + '\',\'' + (r.action||'').replace(/\'/g,"&#39;") + '\',\'' + r.followup + '\',\'' + (r.tokki||'').replace(/\'/g,"&#39;") + '\')">修正</button>' +
           '<button class="toggle-btn" style="color:#A32D2D" onclick="deleteRecord(' + r.id + ')">削除</button>' +
@@ -358,6 +578,13 @@ async function renderList() {
             (r.tokki ? '<div><div class="rec-row-label">特記事項</div><div class="rec-row-val">' + r.tokki + '</div></div>' : '') +
           '</div>' +
           '<div class="rec-meta"><span>面談日：' + r.date + '</span><span>次回確認：' + r.followup + '</span></div>' +
+          (fu ? '<div style="margin-top:8px;padding:8px;background:#f5f5f0;border-radius:8px;font-size:12px">' +
+            '<div style="font-weight:500;margin-bottom:4px;color:#2E4057">最新フォローアップ（' + fu.date + '）</div>' +
+            '<div><span style="color:#666">現在のFI率：</span><b>' + parseFloat(fu.currentFI).toFixed(1) + '%</b>　' +
+            '<span style="color:#666">目標：</span><b>' + fu.targetFI + '%</b></div>' +
+            (fu.improved ? '<div style="margin-top:4px"><span style="color:#666">改善点：</span>' + fu.improved + '</div>' : '') +
+            (fu.notImproved ? '<div style="margin-top:4px"><span style="color:#666">残課題：</span>' + fu.notImproved + '</div>' : '') +
+          '</div>' : '') +
         '</div>' +
       '</div>';
     }).join('');
