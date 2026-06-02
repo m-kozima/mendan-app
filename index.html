@@ -287,6 +287,7 @@ async function loadPartners() {
         name: p.name, store: p.store, team: p.team, tantou: p.tantou,
         role: p.role, rank: rank,
         fi: parseFloat(p.fi) * 100 || 0,
+        goukei: parseFloat(p.goukei) || 0,
         para: parseFloat(p.para) * 100 || 0,
         parafi: parseFloat(p.parafi) * 100 || 0,
         kairi: parseFloat(p.kairi) * 100 || 0,
@@ -337,7 +338,7 @@ function onPartnerChange() {
   if (idx === '') { stats.style.display = 'none'; return; }
   var p = PARTNERS[idx];
   stats.style.display = 'block';
-  document.getElementById('st-fi').textContent = p.fi.toFixed(1) + '%';
+  document.getElementById('st-goukei').textContent = p.goukei ? p.goukei.toFixed(1) + '%' : '-';document.getElementById('st-fi').textContent = p.fi.toFixed(1) + '%';
   document.getElementById('st-para').textContent = p.para.toFixed(1) + '%';
   document.getElementById('st-parafi').textContent = p.parafi.toFixed(1) + '%';
   var kEl = document.getElementById('st-kairi');
@@ -570,7 +571,12 @@ async function renderList() {
         '</div>' +
         '<div style="display:none" id="d-' + r.id + '">' +
           '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:10px">' +
-            '<div class="stat-card"><div class="stat-label">通常FI率</div><div class="stat-val" style="font-size:15px">' + fiv + '%</div></div>' +
+            '<div class="grid3" style="grid-template-columns:1fr 1fr 1fr 1fr">
+  <div class="stat-card"><div class="stat-label">合計FI率</div><div class="stat-val" id="st-goukei">-</div></div>
+  <div class="stat-card"><div class="stat-label">通常FI率</div><div class="stat-val" id="st-fi">-</div></div>
+  <div class="stat-card"><div class="stat-label">パラ獲得率</div><div class="stat-val" id="st-para">-</div></div>
+  <div class="stat-card"><div class="stat-label">パラFI率</div><div class="stat-val" id="st-parafi">-</div></div>
+</div><div class="stat-val" style="font-size:15px">' + fiv + '%</div></div>' +
             '<div class="stat-card"><div class="stat-label">パラ獲得率</div><div class="stat-val" style="font-size:15px">' + pav + '%</div></div>' +
             '<div class="stat-card"><div class="stat-label">パラFI率</div><div class="stat-val" style="font-size:15px">' + pfv + '%</div></div>' +
           '</div>' +
