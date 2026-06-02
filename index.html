@@ -166,7 +166,7 @@ h1{font-size:16px;font-weight:500;margin-bottom:1rem;color:#1a1a1a}
     <div class="grid2">
       <div class="field">
         <label>担当者名 <span class="req">*</span></label>
-        <select id="fu-tantou">
+        <select id="fu-tantou" onchange="loadFuPartners()">
           <option value="">選択</option>
           <option>河本</option><option>小島</option><option>高橋</option><option>岩下</option>
           <option>林</option><option>佐藤</option><option>大竹</option><option>秋田</option>
@@ -317,14 +317,18 @@ function filterPartners() {
 }
 
 function loadFuPartners() {
+  var tantou = document.getElementById('fu-tantou').value;
   var sel = document.getElementById('fu-partner');
   sel.innerHTML = '<option value="">選択してください</option>';
   PARTNERS.forEach(function(p, i) {
+    if (tantou && p.tantou !== tantou) return;
     var o = document.createElement('option');
     o.value = i;
     o.textContent = p.name + '(' + p.store + ')';
     sel.appendChild(o);
   });
+  document.getElementById('fu-partner-info').style.display = 'none';
+  document.getElementById('fu-status-box').style.display = 'none';
 }
 
 function onPartnerChange() {
