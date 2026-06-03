@@ -278,7 +278,8 @@ function getRecheckThreshold(rank) { return getTarget(rank) - 20; }
 async function loadPartners() {
   try {
     var month = document.getElementById('select-month') ? document.getElementById('select-month').value : '6月';
-    var res = await fetch(GAS_URL + '?type=partners&month=' + encodeURIComponent(month));
+    var url = GAS_URL + '?type=partners&month=' + encodeURIComponent(month);
+    var res = await fetch(url, {redirect: 'follow', mode: 'no-cors'});
     var data = await res.json();
     PARTNERS = data.map(function(p) {
       var rank = getRankFromName(p.name);
