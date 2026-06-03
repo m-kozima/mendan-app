@@ -279,24 +279,34 @@ async function loadPartners() {
   try {
     var month = document.getElementById('select-month') ? document.getElementById('select-month').value : '6月';
     var url = GAS_URL + '?type=partners&month=' + encodeURIComponent(month);
-    var res = await fetch(url, {redirect: 'follow', mode: 'no-cors'});
-    var data = await res.json();
-    PARTNERS = data.map(function(p) {
-      var rank = getRankFromName(p.name);
-      return {
-        name: p.name, store: p.store, team: p.team, tantou: p.tantou,
-        role: p.role, rank: rank,
-        fi: parseFloat(p.fi) || 0,
-        goukei: parseFloat(p.goukei) || 0,
-        para: parseFloat(p.para) || 0,
-        parafi: parseFloat(p.parafi) || 0,
-        kairi: parseFloat(p.kairi) || 0,
-        target: getTarget(rank),
-        recheck: getRecheckThreshold(rank)
+    return new Promise(function(resolve) {
+      var callbackName = 'gasCallback_' + Date.now();
+      window[callbackName] = function(data) {
+        PARTNERS = data.map(function(p) {
+          var rank = getRankFromName(p.name);
+          return {
+            name: p.name, store: p.store, team: p.team, tantou: p.tantou,
+            role: p.role, rank: rank,
+            fi: parseFloat(p.fi) * 100 || 0,
+            goukei: parseFloat(p.goukei) * 100 || 0,
+            para: parseFloat(p.para) * 100 || 0,
+            parafi: parseFloat(p.parafi) * 100 || 0,
+            kairi: parseFloat(p.kairi) * 100 || 0,
+            target: getTarget(rank),
+            recheck: getRecheckThreshold(rank)
+          };
+        });
+        filterPartners();
+        loadFuPartners();
+        document.head.removeChild(script);
+        delete window[callbackName];
+        resolve();
       };
+      var script = document.createElement('script');
+      script.src = url + '&callback=' + callbackName;
+      script.onerror = function() { resolve(); };
+      document.head.appendChild(script);
     });
-    filterPartners();
-    loadFuPartners();
   } catch(e) { console.error(e); }
 }
 loadPartners();
