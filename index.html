@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>パラジェル個別面談 記録アプリ</title>
+<div style="margin-bottom:0.75rem;display:flex;align-items:center;gap:8px">
+  <label style="font-size:13px;color:#555;font-weight:500">対象月：</label>
+  <select id="select-month" onchange="loadPartners()" style="font-size:13px;padding:6px 10px;border:1px solid #ccc;border-radius:8px;background:#fff">
+    <option value="6月">2026年6月</option>
+    <option value="5月">2026年5月</option>
+  </select>
+</div>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:sans-serif;font-size:15px;color:#1a1a1a;background:#f5f5f0;padding:1rem}
@@ -69,6 +76,13 @@ h1{font-size:16px;font-weight:500;margin-bottom:1rem;color:#1a1a1a}
 <body>
 <div class="app">
 <h1>パラジェル個別面談 記録アプリ</h1>
+<div style="margin-bottom:0.75rem;display:flex;align-items:center;gap:8px">
+  <label style="font-size:13px;color:#555;font-weight:500">対象月：</label>
+  <select id="select-month" onchange="loadPartners()" style="font-size:13px;padding:6px 10px;border:1px solid #ccc;border-radius:8px;background:#fff">
+    <option value="6月">2026年6月</option>
+    <option value="5月">2026年5月</option>
+  </select>
+</div>
 <div class="nav">
   <button class="nav-btn active" onclick="showPage('input',this)">面談を記録</button>
   <button class="nav-btn" onclick="showPage('followup',this)">フォローアップ</button>
@@ -279,7 +293,8 @@ function getRecheckThreshold(rank) {
 
 async function loadPartners() {
   try {
-    var res = await fetch(GAS_URL + '?type=partners');
+    var month = document.getElementById('select-month') ? document.getElementById('select-month').value : '6月';
+var res = await fetch(GAS_URL + '?type=partners&month=' + month);
     var data = await res.json();
     PARTNERS = data.map(function(p) {
       var rank = getRankFromName(p.name);
