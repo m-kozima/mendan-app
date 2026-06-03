@@ -23,6 +23,7 @@ body{font-family:sans-serif;font-size:15px;color:#1a1a1a;background:#f5f5f0;padd
 .hint{font-size:11px;color:#888;margin-top:3px;line-height:1.5}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px}
 .radio-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid #ddd;border-radius:8px;margin-bottom:6px;cursor:pointer;background:#fff}
 .radio-item:last-child{margin-bottom:0}
 .radio-item input{margin-top:2px;flex-shrink:0;width:16px;height:16px}
@@ -61,9 +62,7 @@ body{font-family:sans-serif;font-size:15px;color:#1a1a1a;background:#f5f5f0;padd
 .toggle-btn{font-size:12px;padding:4px 10px;background:#f5f5f0;border:1px solid #ccc;border-radius:6px;cursor:pointer;color:#555}
 .empty{text-align:center;padding:2rem;color:#888;font-size:13px}
 .save-msg{text-align:center;font-size:13px;color:#3B6D11;margin-top:8px;display:none}
-h1{font-size:16px;font-weight:500;margin-bottom:1rem;color:#1a1a1a}
-.target-info{background:#FFF3E0;border-radius:8px;padding:10px 12px;margin-bottom:0.75rem;font-size:12px}
-.target-info-title{font-weight:500;color:#854F0B;margin-bottom:4px}
+h1{font-size:16px;font-weight:500;margin-bottom:0.5rem;color:#1a1a1a}
 </style>
 </head>
 <body>
@@ -92,8 +91,8 @@ h1{font-size:16px;font-weight:500;margin-bottom:1rem;color:#1a1a1a}
         <select id="tantousha" onchange="filterPartners()">
           <option value="">選択</option>
           <option>河本</option><option>小島</option><option>高橋</option><option>岩下</option>
-          <option>林</option><option>佐藤</option><option>大竹</option><option>秋田</option>
-          <option>三尾</option><option>秋定</option>
+          <option>林</option><option>佐藤</option><option>秋定</option><option>秋田</option>
+          <option>三尾</option>
         </select>
       </div>
       <div class="field">
@@ -109,13 +108,14 @@ h1{font-size:16px;font-weight:500;margin-bottom:1rem;color:#1a1a1a}
     </div>
     <div id="partner-stats" style="display:none" class="partner-info">
       <div class="partner-info-title">現在の数値</div>
-      <div class="grid3">
+      <div class="grid4">
+        <div class="stat-card"><div class="stat-label">合計FI率</div><div class="stat-val" id="st-goukei">-</div></div>
         <div class="stat-card"><div class="stat-label">通常FI率</div><div class="stat-val" id="st-fi">-</div></div>
         <div class="stat-card"><div class="stat-label">パラ獲得率</div><div class="stat-val" id="st-para">-</div></div>
         <div class="stat-card"><div class="stat-label">パラFI率</div><div class="stat-val" id="st-parafi">-</div></div>
       </div>
       <div style="margin-top:6px;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-        <span style="font-size:11px;color:#3C3489">乖離幅：</span>
+        <span style="font-size:11px;color:#3C3489">目標との乖離：</span>
         <span id="st-kairi" class="badge badge-red"></span>
         <span id="st-type" class="badge badge-purple"></span>
         <span id="st-team" class="badge badge-blue"></span>
@@ -176,8 +176,8 @@ h1{font-size:16px;font-weight:500;margin-bottom:1rem;color:#1a1a1a}
         <select id="fu-tantou" onchange="loadFuPartners()">
           <option value="">選択</option>
           <option>河本</option><option>小島</option><option>高橋</option><option>岩下</option>
-          <option>林</option><option>佐藤</option><option>大竹</option><option>秋田</option>
-          <option>三尾</option><option>秋定</option>
+          <option>林</option><option>佐藤</option><option>秋定</option><option>秋田</option>
+          <option>三尾</option>
         </select>
       </div>
       <div class="field">
@@ -240,8 +240,8 @@ h1{font-size:16px;font-weight:500;margin-bottom:1rem;color:#1a1a1a}
     <select id="filter-tantou" onchange="renderList()">
       <option value="">担当者：全員</option>
       <option>河本</option><option>小島</option><option>高橋</option><option>岩下</option>
-      <option>林</option><option>佐藤</option><option>大竹</option><option>秋田</option>
-      <option>三尾</option><option>秋定</option>
+      <option>林</option><option>佐藤</option><option>秋定</option><option>秋田</option>
+      <option>三尾</option>
     </select>
     <select id="filter-feel" onchange="renderList()">
       <option value="">手応え：すべて</option>
@@ -261,13 +261,10 @@ h1{font-size:16px;font-weight:500;margin-bottom:1rem;color:#1a1a1a}
 </div>
 
 <script>
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbxlhZpXIi1Yl2Yj6BRUq4i99P_4TRYKJiF9hBxVRB2fEjb3I44pG9Mf4sXE9YxkazA/exec';
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbxlhZpXIi1Yl2Yj6BRUq4i99P_4TRYKJiF9hBxVRB2fEjb3I44pG9Mf4sXE9YxkazA/exec';
 var PARTNERS = [];
 
-// ランク別目標値
-var RANK_TARGETS = {
-  '●': 45, '★': 48, '☆': 51, '■': 54, '□': 57, 'T': 60
-};
+var RANK_TARGETS = {'●':45,'★':48,'☆':51,'■':54,'□':57,'T':60};
 
 function getRankFromName(name) {
   if (!name) return 'T';
@@ -275,30 +272,24 @@ function getRankFromName(name) {
   if (['●','★','☆','■','□'].indexOf(first) !== -1) return first;
   return 'T';
 }
-
-function getTarget(rank) {
-  return RANK_TARGETS[rank] || 60;
-}
-
-function getRecheckThreshold(rank) {
-  return getTarget(rank) - 20;
-}
+function getTarget(rank) { return RANK_TARGETS[rank] || 60; }
+function getRecheckThreshold(rank) { return getTarget(rank) - 20; }
 
 async function loadPartners() {
   try {
     var month = document.getElementById('select-month') ? document.getElementById('select-month').value : '6月';
-var res = await fetch(GAS_URL + '?type=partners&month=' + month);
+    var res = await fetch(GAS_URL + '?type=partners&month=' + encodeURIComponent(month));
     var data = await res.json();
     PARTNERS = data.map(function(p) {
       var rank = getRankFromName(p.name);
       return {
         name: p.name, store: p.store, team: p.team, tantou: p.tantou,
         role: p.role, rank: rank,
-        fi: parseFloat(p.fi) * 100 || 0,
+        fi: parseFloat(p.fi) || 0,
         goukei: parseFloat(p.goukei) || 0,
-        para: parseFloat(p.para) * 100 || 0,
-        parafi: parseFloat(p.parafi) * 100 || 0,
-        kairi: parseFloat(p.kairi) * 100 || 0,
+        para: parseFloat(p.para) || 0,
+        parafi: parseFloat(p.parafi) || 0,
+        kairi: parseFloat(p.kairi) || 0,
         target: getTarget(rank),
         recheck: getRecheckThreshold(rank)
       };
@@ -346,15 +337,16 @@ function onPartnerChange() {
   if (idx === '') { stats.style.display = 'none'; return; }
   var p = PARTNERS[idx];
   stats.style.display = 'block';
-  document.getElementById('st-goukei').textContent = p.goukei ? p.goukei.toFixed(1) + '%' : '-';document.getElementById('st-fi').textContent = p.fi.toFixed(1) + '%';
+  document.getElementById('st-goukei').textContent = p.goukei.toFixed(1) + '%';
+  document.getElementById('st-fi').textContent = p.fi.toFixed(1) + '%';
   document.getElementById('st-para').textContent = p.para.toFixed(1) + '%';
   document.getElementById('st-parafi').textContent = p.parafi.toFixed(1) + '%';
   var kEl = document.getElementById('st-kairi');
   kEl.textContent = p.kairi.toFixed(1) + 'pt';
-  kEl.className = 'badge ' + (p.kairi >= 20 ? 'badge-red' : p.kairi >= 10 ? 'badge-amber' : 'badge-green');
+  kEl.className = 'badge ' + (p.kairi <= -20 ? 'badge-red' : p.kairi <= -10 ? 'badge-amber' : 'badge-green');
   document.getElementById('st-team').textContent = p.team;
   var tEl = document.getElementById('st-type');
-  if (p.role) { tEl.textContent = p.role; tEl.style.display = 'inline-block'; }
+  if (p.role && p.role !== '-') { tEl.textContent = p.role; tEl.style.display = 'inline-block'; }
   else { tEl.style.display = 'none'; }
 }
 
@@ -440,8 +432,7 @@ async function saveFollowup() {
   var fi = parseFloat(currentFI);
   var status = fi >= p.target ? 'achieved' : fi < p.recheck ? 'recheck' : 'progress';
   var rec = {
-    type: 'followup',
-    id: Date.now(),
+    type: 'followup', id: Date.now(),
     tantou: tantou, date: date,
     partnerName: p.name, store: p.store,
     rank: p.rank, currentFI: fi,
@@ -473,9 +464,8 @@ function showPage(id, btn) {
   if (id === 'list') renderList();
 }
 
-var feelLabel = { good: '良好', mid: '普通', bad: '要フォロー' };
-var typeLabel = { type1: '乖離大・通常FI安定', type2: '乖離あり・一定数取れている', type3: '通常FI 10%未満' };
-var statusLabel = { achieved: '目標達成', recheck: '再面談対象', progress: '対応中' };
+var feelLabel = {good:'良好',mid:'普通',bad:'要フォロー'};
+var typeLabel = {type1:'乖離大・通常FI安定',type2:'乖離あり・一定数取れている',type3:'通常FI 10%未満'};
 
 function toggleDetail(id) {
   var el = document.getElementById('d-' + id);
@@ -512,13 +502,10 @@ async function renderList() {
   var c = document.getElementById('list-container');
   c.innerHTML = '<div class="empty">読み込み中...</div>';
   try {
-    // 面談記録とフォローアップを両方取得
     var res = await fetch(GAS_URL + '?type=records');
     var rows = await res.json();
     var fuRes = await fetch(GAS_URL + '?type=followup');
     var fuRows = await fuRes.json();
-
-    // フォローアップデータをパートナー名でインデックス化
     var fuMap = {};
     if (fuRows && fuRows.length > 1) {
       var fuHeaders = fuRows[0];
@@ -530,7 +517,6 @@ async function renderList() {
         }
       });
     }
-
     if (!rows || rows.length <= 1) { c.innerHTML = '<div class="empty">まだ記録がありません</div>'; return; }
     var headers = rows[0];
     var data = rows.slice(1).map(function(row) {
@@ -538,7 +524,6 @@ async function renderList() {
       headers.forEach(function(h, i) { obj[h] = row[i]; });
       return obj;
     });
-
     var filtered = data.filter(function(r) {
       if (ft && r.tantou !== ft) return false;
       if (ff && r.feel !== ff) return false;
@@ -549,15 +534,14 @@ async function renderList() {
       }
       return true;
     });
-
     if (!filtered.length) { c.innerHTML = '<div class="empty">該当する記録がありません</div>'; return; }
     c.innerHTML = filtered.map(function(r) {
       var fc = r.feel === 'good' ? 'tag-good' : r.feel === 'mid' ? 'tag-mid' : 'tag-bad';
-      var kv = parseFloat(r.kairi) * 100;
-      var kc = kv >= 20 ? 'badge-red' : kv >= 10 ? 'badge-amber' : 'badge-green';
-      var fiv = (parseFloat(r.fi) * 100).toFixed(1);
-      var pav = (parseFloat(r.para) * 100).toFixed(1);
-      var pfv = (parseFloat(r.parafi) * 100).toFixed(1);
+      var kv = parseFloat(r.kairi);
+      var kc = kv <= -20 ? 'badge-red' : kv <= -10 ? 'badge-amber' : 'badge-green';
+      var fiv = parseFloat(r.fi).toFixed(1);
+      var pav = parseFloat(r.para).toFixed(1);
+      var pfv = parseFloat(r.parafi).toFixed(1);
       var fu = fuMap[r.partnerName];
       var statusBadge = '';
       var cardClass = 'rec-card';
@@ -579,12 +563,7 @@ async function renderList() {
         '</div>' +
         '<div style="display:none" id="d-' + r.id + '">' +
           '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:10px">' +
-            <div class="grid3" style="grid-template-columns:1fr 1fr 1fr 1fr">
-  <div class="stat-card"><div class="stat-label">合計FI率</div><div class="stat-val" id="st-goukei">-</div></div>
-  <div class="stat-card"><div class="stat-label">通常FI率</div><div class="stat-val" id="st-fi">-</div></div>
-  <div class="stat-card"><div class="stat-label">パラ獲得率</div><div class="stat-val" id="st-para">-</div></div>
-  <div class="stat-card"><div class="stat-label">パラFI率</div><div class="stat-val" id="st-parafi">-</div></div>
-</div><div class="stat-val" style="font-size:15px">' + fiv + '%</div></div>' +
+            '<div class="stat-card"><div class="stat-label">通常FI率</div><div class="stat-val" style="font-size:15px">' + fiv + '%</div></div>' +
             '<div class="stat-card"><div class="stat-label">パラ獲得率</div><div class="stat-val" style="font-size:15px">' + pav + '%</div></div>' +
             '<div class="stat-card"><div class="stat-label">パラFI率</div><div class="stat-val" style="font-size:15px">' + pfv + '%</div></div>' +
           '</div>' +
