@@ -266,7 +266,8 @@ var PARTNERS = [];
 
 var RANK_TARGETS = {'●':45,'★':48,'☆':51,'■':54,'□':57,'T':60};
 
-function getRankFromName(name) {
+function getRankFromName(name, symbol) {
+  if (symbol && ['●','★','☆','■','□'].indexOf(symbol) !== -1) return symbol;
   if (!name) return 'T';
   var first = name.charAt(0);
   if (['●','★','☆','■','□'].indexOf(first) !== -1) return first;
@@ -283,7 +284,7 @@ async function loadPartners() {
       var callbackName = 'gasCallback_' + Date.now();
       window[callbackName] = function(data) {
         PARTNERS = data.map(function(p) {
-          var rank = getRankFromName(p.name);
+          var rank = getRankFromName(p.name, p.symbol);
           return {
             name: p.name, store: p.store, team: p.team, tantou: p.tantou,
             role: p.role, rank: rank,
