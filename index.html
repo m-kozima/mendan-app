@@ -430,14 +430,11 @@ if (!tantou || !date || pidx === '' || !typeEl || !shokai || !action || !followu
     fi: p.fi, para: p.para, parafi: p.parafi, kairi: p.kairi,
     type: typeEl.value, shokai: shokai,
     kadai: document.getElementById('kadai').value,
-ridanReason: document.getElementById('ridan-reason').value,
-ridanIndividual: document.getElementById('ridan-individual').value,
-ridanPattern: document.getElementById('ridan-pattern').value,
     action: action, followup: followup, feel: feelEl.value,
-    tokki: document.getElementById('tokki').value
-ridanReason: document.getElementById('ridan-reason').value,
-ridanIndividual: document.getElementById('ridan-individual').value,
-ridanPattern: document.getElementById('ridan-pattern').value,
+    tokki: document.getElementById('tokki').value,
+    ridanReason: document.getElementById('ridan-reason').value,
+    ridanIndividual: document.getElementById('ridan-individual').value,
+    ridanPattern: document.getElementById('ridan-pattern').value,
   };
   try {
     await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(rec) });
