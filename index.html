@@ -139,6 +139,23 @@ h1{font-size:16px;font-weight:500;margin-bottom:0.5rem;color:#1a1a1a}
       <textarea id="kadai" placeholder="紹介しにくい理由、不安な点など"></textarea>
     </div>
     <div class="field">
+</div>
+  <div class="card">
+    <div class="section-title">離脱ポイント</div>
+    <div class="field">
+      <label>断られた理由・難色を示した内容 <span class="req">*</span></label>
+      <textarea id="ridan-reason" placeholder="例：価格が高い、毎回勧められると押し売り感がある、など"></textarea>
+    </div>
+    <div class="field">
+      <label>個別事情（そのパートナー特有） <span class="req">*</span></label>
+      <textarea id="ridan-individual" placeholder="例：指名客が多く再提案しにくい、新人スタッフの技術が不安定、など"></textarea>
+    </div>
+    <div class="field">
+      <label>共通しそうなパターン（他でも見られそうか） <span class="req">*</span></label>
+      <textarea id="ridan-pattern" placeholder="例：価格への抵抗は他店でも多い、断られた後の次の一手がない、など"></textarea>
+    </div>
+  <div class="card">
+    <div class="section-title">アクション</div>
       <label>設定したアクション <span class="req">*</span></label>
       <textarea id="action" placeholder="何を・いつ・誰に試すか"></textarea>
       <p class="hint">例：今週の施術でリピーターのお客様に1回以上パラジェルの話題を出す</p>
@@ -400,7 +417,10 @@ async function saveRecord() {
   var action = document.getElementById('action').value;
   var followup = document.getElementById('followup-date').value;
   var feelEl = document.querySelector('input[name="feel"]:checked');
-  if (!tantou || !date || pidx === '' || !typeEl || !shokai || !action || !followup || !feelEl) {
+  var ridanReason = document.getElementById('ridan-reason').value;
+var ridanIndividual = document.getElementById('ridan-individual').value;
+var ridanPattern = document.getElementById('ridan-pattern').value;
+if (!tantou || !date || pidx === '' || !typeEl || !shokai || !action || !followup || !feelEl || !ridanReason || !ridanIndividual || !ridanPattern) {
     alert('必須項目(*)をすべて入力してください'); return;
   }
   var p = PARTNERS[pidx];
@@ -410,8 +430,14 @@ async function saveRecord() {
     fi: p.fi, para: p.para, parafi: p.parafi, kairi: p.kairi,
     type: typeEl.value, shokai: shokai,
     kadai: document.getElementById('kadai').value,
+ridanReason: document.getElementById('ridan-reason').value,
+ridanIndividual: document.getElementById('ridan-individual').value,
+ridanPattern: document.getElementById('ridan-pattern').value,
     action: action, followup: followup, feel: feelEl.value,
     tokki: document.getElementById('tokki').value
+ridanReason: document.getElementById('ridan-reason').value,
+ridanIndividual: document.getElementById('ridan-individual').value,
+ridanPattern: document.getElementById('ridan-pattern').value,
   };
   try {
     await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(rec) });
