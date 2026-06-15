@@ -512,7 +512,30 @@ function toggleDetail(id) {
 
 function deleteRecord(id) {
   if (!confirm('この記録を削除しますか？')) return;
-  fetch(GAS_URL + '?type=delete&id=' + id).then(function() { renderList(); });
+  fetch(GAS_URL + '?type=delete&id=' + id).then(function() {
+    // localStorageの入力済みリストも更新
+    var rows = document.querySelectorAll('.rec-card');
+    // 削除したIDのパートナー名を特定してlocalStorageから削除
+    fetch(GAS_URL + '?type=records').then(function(res) {
+      return res.json();
+    }).then(function(data) {
+      if (data && data.length > 1) {
+        var headers = data[0];
+        var idIdx = headers.indexOf('id');
+        var nameIdx = headers.indexOf('partnerName');
+        data.slice(1).forEach(function(row) {
+          if (String(row[idIdx]) === String(id)) {
+            var name = row[nameIdx];
+            var done = JSON.parse(localStorage.getItem('mendan_done') || '[]');
+            done = done.filter(function(n) { return n !== name; });
+            localStorage.setItem('mendan_done', JSON.stringify(done));
+          }
+        });
+      }
+      renderList();
+      filterPartners();
+    });
+  });
 }
 
 function editRecord(id, date, feel, shokai, kadai, action, followup, tokki) {
