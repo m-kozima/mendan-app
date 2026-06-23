@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
@@ -63,6 +63,33 @@ body{font-family:sans-serif;font-size:15px;color:#1a1a1a;background:#f5f5f0;padd
 .save-msg{text-align:center;font-size:13px;color:#3B6D11;margin-top:8px;display:none}
 h1{font-size:16px;font-weight:500;margin-bottom:0.5rem;color:#1a1a1a}
 .ridan-card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:1rem;margin-bottom:0.75rem;border-left:4px solid #C8292F}
+
+/* ★ FIトラッキング用スタイル */
+.track-card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:0.875rem 1rem;margin-bottom:8px}
+.track-card.achieved{border-left:4px solid #3B6D11}
+.track-card.recheck{border-left:4px solid #A32D2D}
+.track-card.progress{border-left:4px solid #854F0B}
+.track-name{font-size:14px;font-weight:500}
+.track-tantou{font-size:12px;color:#666;margin-top:2px}
+.fi-timeline{display:flex;align-items:center;gap:6px;margin-top:10px;flex-wrap:wrap}
+.fi-point{text-align:center;min-width:72px}
+.fi-point-label{font-size:10px;color:#888;margin-bottom:3px}
+.fi-point-val{font-size:16px;font-weight:600;color:#1a1a1a}
+.fi-point-val.empty-val{font-size:13px;color:#bbb;font-weight:400}
+.fi-arrow{font-size:18px;color:#999;flex-shrink:0}
+.fi-arrow.up{color:#3B6D11}
+.fi-arrow.down{color:#A32D2D}
+.fi-arrow.flat{color:#999}
+.track-footer{display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap}
+.target-label{font-size:11px;color:#888}
+.diff-badge{font-size:11px;padding:2px 7px;border-radius:6px;font-weight:500}
+.diff-plus{background:#EAF3DE;color:#3B6D11}
+.diff-minus{background:#FCEBEB;color:#A32D2D}
+.diff-neutral{background:#F0F0F0;color:#555}
+.track-summary{background:#f5f5f0;border-radius:8px;padding:10px 12px;margin-bottom:0.75rem;display:flex;gap:12px;flex-wrap:wrap}
+.track-summary-item{text-align:center}
+.track-summary-label{font-size:10px;color:#888;margin-bottom:2px}
+.track-summary-val{font-size:18px;font-weight:600}
 </style>
 </head>
 <body>
@@ -79,6 +106,7 @@ h1{font-size:16px;font-weight:500;margin-bottom:0.5rem;color:#1a1a1a}
   <button class="nav-btn active" onclick="showPage('input',this)">面談を記録</button>
   <button class="nav-btn" onclick="showPage('followup',this)">フォローアップ</button>
   <button class="nav-btn" onclick="showPage('list',this)">一覧・確認</button>
+  <button class="nav-btn" onclick="showPage('tracking',this)">FI推移</button>
 </div>
 
 <!-- 面談記録タブ -->
@@ -276,11 +304,38 @@ h1{font-size:16px;font-weight:500;margin-bottom:0.5rem;color:#1a1a1a}
   </div>
   <div id="list-container"></div>
 </div>
+
+<!-- ★ FI推移タブ -->
+<div id="page-tracking" class="page">
+  <div class="filter-row">
+    <select id="track-month" onchange="loadTracking()" style="font-size:13px;padding:6px 8px;border:1px solid #ccc;border-radius:8px;flex:1">
+      <option value="6月">2026年6月</option>
+      <option value="5月">2026年5月</option>
+    </select>
+    <select id="track-tantou" onchange="renderTracking()" style="font-size:13px;padding:6px 8px;border:1px solid #ccc;border-radius:8px;flex:1">
+      <option value="">担当者：全員</option>
+      <option>河本</option><option>小島</option><option>高橋</option><option>岩下</option>
+      <option>林</option><option>佐藤</option><option>秋定</option><option>秋田</option>
+      <option>三尾</option><option>大竹</option>
+    </select>
+    <select id="track-status" onchange="renderTracking()" style="font-size:13px;padding:6px 8px;border:1px solid #ccc;border-radius:8px;flex:1">
+      <option value="">状況：すべて</option>
+      <option value="achieved">目標達成</option>
+      <option value="progress">改善中</option>
+      <option value="recheck">要注意</option>
+      <option value="nodata">未入力</option>
+    </select>
+  </div>
+  <div id="track-summary-area"></div>
+  <div id="track-container"><div class="empty">月を選択してください</div></div>
+</div>
+
 </div>
 
 <script>
 var GAS_URL = 'https://script.google.com/macros/s/AKfycbxlhZpXIi1Yl2Yj6BRUq4i99P_4TRYKJiF9hBxVRB2fEjb3I44pG9Mf4sXE9YxkazA/exec';
 var PARTNERS = [];
+var TRACKING_DATA = [];
 var RANK_TARGETS = {'●':45,'★':48,'☆':51,'■':54,'□':57,'T':60};
 
 function getRankFromName(name, symbol) {
@@ -497,6 +552,155 @@ function showPage(id, btn) {
   document.getElementById('page-' + id).classList.add('active');
   btn.classList.add('active');
   if (id === 'list') renderList();
+  if (id === 'tracking') loadTracking();
+}
+
+// ★ FIトラッキング機能
+function loadTracking() {
+  var month = document.getElementById('track-month').value;
+  var container = document.getElementById('track-container');
+  container.innerHTML = '<div class="empty">読み込み中...</div>';
+  document.getElementById('track-summary-area').innerHTML = '';
+
+  var callbackName = 'trackCallback_' + Date.now();
+  window[callbackName] = function(data) {
+    TRACKING_DATA = data;
+    renderTracking();
+    document.head.removeChild(script);
+    delete window[callbackName];
+  };
+  var script = document.createElement('script');
+  var url = GAS_URL + '?type=tracking&month=' + encodeURIComponent(month) + '&callback=' + callbackName;
+  script.src = url;
+  script.onerror = function() {
+    container.innerHTML = '<div class="empty">データの読み込みに失敗しました</div>';
+    document.head.removeChild(script);
+    delete window[callbackName];
+  };
+  document.head.appendChild(script);
+}
+
+function getTrackStatus(row) {
+  // 月末FI率があればそれで判定、なければ15日FI率、なければnodata
+  var fi15 = parseFloat(row['15日確認FI率']);
+  var fiEnd = parseFloat(row['月末FI率']);
+  var target = parseFloat(row['目標FI率']) || 0;
+  var recheck = target - 20;
+
+  var latestFi = !isNaN(fiEnd) ? fiEnd : (!isNaN(fi15) ? fi15 : NaN);
+  if (isNaN(latestFi)) return 'nodata';
+  if (latestFi >= target) return 'achieved';
+  if (latestFi < recheck) return 'recheck';
+  return 'progress';
+}
+
+function arrowHtml(prev, curr) {
+  if (isNaN(prev) || isNaN(curr)) return '<span class="fi-arrow flat">→</span>';
+  var diff = curr - prev;
+  if (diff > 0.05) return '<span class="fi-arrow up">↑</span>';
+  if (diff < -0.05) return '<span class="fi-arrow down">↓</span>';
+  return '<span class="fi-arrow flat">→</span>';
+}
+
+function fiValHtml(val) {
+  if (isNaN(val) || val === null || val === '') {
+    return '<div class="fi-point-val empty-val">未入力</div>';
+  }
+  return '<div class="fi-point-val">' + parseFloat(val).toFixed(1) + '%</div>';
+}
+
+function renderTracking() {
+  var filterTantou = document.getElementById('track-tantou').value;
+  var filterStatus = document.getElementById('track-status').value;
+  var container = document.getElementById('track-container');
+  var summaryArea = document.getElementById('track-summary-area');
+
+  if (!TRACKING_DATA || TRACKING_DATA.length === 0) {
+    container.innerHTML = '<div class="empty">データがありません。スプレッドシートのtrackingシートを確認してください。</div>';
+    summaryArea.innerHTML = '';
+    return;
+  }
+
+  var filtered = TRACKING_DATA.filter(function(row) {
+    if (filterTantou && row['担当者'] !== filterTantou) return false;
+    if (filterStatus && getTrackStatus(row) !== filterStatus) return false;
+    return true;
+  });
+
+  // サマリー集計（フィルター前の全体）
+  var total = TRACKING_DATA.length;
+  var achieved = TRACKING_DATA.filter(function(r){ return getTrackStatus(r) === 'achieved'; }).length;
+  var recheckCount = TRACKING_DATA.filter(function(r){ return getTrackStatus(r) === 'recheck'; }).length;
+  var nodata = TRACKING_DATA.filter(function(r){ return getTrackStatus(r) === 'nodata'; }).length;
+
+  summaryArea.innerHTML = '<div class="track-summary">' +
+    '<div class="track-summary-item"><div class="track-summary-label">対象者合計</div><div class="track-summary-val">' + total + '名</div></div>' +
+    '<div class="track-summary-item"><div class="track-summary-label" style="color:#3B6D11">目標達成</div><div class="track-summary-val" style="color:#3B6D11">' + achieved + '名</div></div>' +
+    '<div class="track-summary-item"><div class="track-summary-label" style="color:#A32D2D">要注意</div><div class="track-summary-val" style="color:#A32D2D">' + recheckCount + '名</div></div>' +
+    '<div class="track-summary-item"><div class="track-summary-label" style="color:#bbb">未入力</div><div class="track-summary-val" style="color:#bbb">' + nodata + '名</div></div>' +
+  '</div>';
+
+  if (!filtered.length) {
+    container.innerHTML = '<div class="empty">該当するデータがありません</div>';
+    return;
+  }
+
+  container.innerHTML = filtered.map(function(row) {
+    var fi0 = parseFloat(row['抽出時FI率']);
+    var fi15 = parseFloat(row['15日確認FI率']);
+    var fiEnd = parseFloat(row['月末FI率']);
+    var target = parseFloat(row['目標FI率']) || 0;
+    var status = getTrackStatus(row);
+
+    var cardClass = 'track-card ' + status;
+    var statusBadge = '';
+    if (status === 'achieved') statusBadge = '<span class="tag-achieved">目標達成</span>';
+    else if (status === 'recheck') statusBadge = '<span class="tag-recheck">要注意</span>';
+    else if (status === 'progress') statusBadge = '<span class="tag-progress">改善中</span>';
+    else statusBadge = '<span class="badge badge-gray">未入力</span>';
+
+    // 最新FIとの差分（抽出時比）
+    var latestFi = !isNaN(fiEnd) ? fiEnd : (!isNaN(fi15) ? fi15 : NaN);
+    var diffHtml = '';
+    if (!isNaN(latestFi) && !isNaN(fi0)) {
+      var diff = latestFi - fi0;
+      var diffClass = diff > 0 ? 'diff-plus' : diff < 0 ? 'diff-minus' : 'diff-neutral';
+      var sign = diff > 0 ? '+' : '';
+      diffHtml = '<span class="diff-badge ' + diffClass + '">' + sign + diff.toFixed(1) + 'pt</span>';
+    }
+
+    // 目標まであと何pt
+    var toTargetHtml = '';
+    if (!isNaN(latestFi) && target > 0) {
+      var toTarget = target - latestFi;
+      if (toTarget <= 0) {
+        toTargetHtml = '<span style="font-size:11px;color:#3B6D11">目標クリア！</span>';
+      } else {
+        toTargetHtml = '<span style="font-size:11px;color:#888">目標まで あと ' + toTarget.toFixed(1) + 'pt</span>';
+      }
+    }
+
+    return '<div class="' + cardClass + '">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start">' +
+        '<div>' +
+          '<div class="track-name">' + (row['パートナー名'] || '') + '</div>' +
+          '<div class="track-tantou">担当：' + (row['担当者'] || '') + '　ランク：' + (row['ランク'] || '') + '　目標：' + target + '%</div>' +
+        '</div>' +
+        statusBadge +
+      '</div>' +
+      '<div class="fi-timeline">' +
+        '<div class="fi-point"><div class="fi-point-label">抽出時</div>' + fiValHtml(fi0) + '</div>' +
+        arrowHtml(fi0, fi15) +
+        '<div class="fi-point"><div class="fi-point-label">15日確認</div>' + fiValHtml(fi15) + '</div>' +
+        arrowHtml(fi15, fiEnd) +
+        '<div class="fi-point"><div class="fi-point-label">月末</div>' + fiValHtml(fiEnd) + '</div>' +
+      '</div>' +
+      '<div class="track-footer">' +
+        (diffHtml ? diffHtml : '') +
+        toTargetHtml +
+      '</div>' +
+    '</div>';
+  }).join('');
 }
 
 var feelLabel = {good:'良好',mid:'普通',bad:'要フォロー'};
@@ -513,9 +717,6 @@ function toggleDetail(id) {
 function deleteRecord(id) {
   if (!confirm('この記録を削除しますか？')) return;
   fetch(GAS_URL + '?type=delete&id=' + id).then(function() {
-    // localStorageの入力済みリストも更新
-    var rows = document.querySelectorAll('.rec-card');
-    // 削除したIDのパートナー名を特定してlocalStorageから削除
     fetch(GAS_URL + '?type=records').then(function(res) {
       return res.json();
     }).then(function(data) {
