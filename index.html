@@ -153,6 +153,11 @@ h1{font-size:16px;font-weight:500;margin-bottom:0.5rem;color:#1a1a1a}
   <div class="card">
     <div class="section-title">面談内容</div>
     <div class="field">
+      <label>今月目標FI率（%） <span class="req">*</span></label>
+      <input type="number" id="monthly-target" placeholder="例：48.0" step="0.1">
+      <p class="hint">このパートナーに設定した今月の個別目標値を入力してください</p>
+    </div>
+    <div class="field">
       <label>パートナーの状況タイプ <span class="req">*</span></label>
       <label class="radio-item"><input type="radio" name="type" value="type1"><span class="radio-item-text">乖離幅大・通常FIは安定（メインの対象）</span></label>
       <label class="radio-item"><input type="radio" name="type" value="type2"><span class="radio-item-text">乖離あり・通常FI・パラFI一定数取れている</span></label>
@@ -165,6 +170,10 @@ h1{font-size:16px;font-weight:500;margin-bottom:0.5rem;color:#1a1a1a}
     <div class="field">
       <label>感じている課題・不安（本人の言葉）</label>
       <textarea id="kadai" placeholder="紹介しにくい理由、不安な点など"></textarea>
+    </div>
+    <div class="field">
+      <label>フィルインが増えたらどんないいことがあると思うか？（本人の言葉）</label>
+      <textarea id="fillin-merit" placeholder="例：指名につながりそう、お客様に喜ばれそう、など"></textarea>
     </div>
   </div>
   <div class="ridan-card">
@@ -475,7 +484,8 @@ async function saveRecord() {
   var ridanReason = document.getElementById('ridan-reason').value;
   var ridanIndividual = document.getElementById('ridan-individual').value;
   var ridanPattern = document.getElementById('ridan-pattern').value;
-  if (!tantou || !date || pidx === '' || !typeEl || !shokai || !action || !followup || !feelEl || !ridanReason || !ridanIndividual || !ridanPattern) {
+  var monthlyTarget = document.getElementById('monthly-target').value;
+  if (!tantou || !date || pidx === '' || !typeEl || !shokai || !action || !followup || !feelEl || !ridanReason || !ridanIndividual || !ridanPattern || !monthlyTarget) {
     alert('必須項目(*)をすべて入力してください'); return;
   }
   var p = PARTNERS[pidx];
@@ -485,11 +495,13 @@ async function saveRecord() {
     fi: p.fi, para: p.para, parafi: p.parafi, kairi: p.kairi,
     type: typeEl.value, shokai: shokai,
     kadai: document.getElementById('kadai').value,
+    fillinMerit: document.getElementById('fillin-merit').value,
     action: action, followup: followup, feel: feelEl.value,
     tokki: document.getElementById('tokki').value,
     ridanReason: ridanReason,
     ridanIndividual: ridanIndividual,
-    ridanPattern: ridanPattern
+    ridanPattern: ridanPattern,
+    monthlyTarget: parseFloat(monthlyTarget)
   };
   try {
     await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(rec) });
@@ -500,7 +512,7 @@ async function saveRecord() {
   var msg = document.getElementById('save-msg');
   msg.style.display = 'block';
   setTimeout(function() { msg.style.display = 'none'; }, 2000);
-  ['tantousha','mendan-date','shokai','kadai','action','followup-date','tokki','ridan-reason','ridan-individual','ridan-pattern'].forEach(function(id) {
+  ['tantousha','mendan-date','shokai','kadai','fillin-merit','action','followup-date','tokki','ridan-reason','ridan-individual','ridan-pattern','monthly-target'].forEach(function(id) {
     document.getElementById(id).value = '';
   });
   document.getElementById('partner-select').value = '';
@@ -684,7 +696,7 @@ function renderTracking() {
       '<div style="display:flex;justify-content:space-between;align-items:flex-start">' +
         '<div>' +
           '<div class="track-name">' + (row['パートナー名'] || '') + '</div>' +
-          '<div class="track-tantou">担当：' + (row['担当者'] || '') + '　ランク：' + (row['ランク'] || '') + '　目標：' + target + '%</div>' +
+          '<div class="track-tantou">担当：' + (row['担当者'] || '') + '　ランク目標：' + target + '%' + (row['面談時目標'] ? '　<span style="color:#185FA5;font-weight:500">面談時目標：' + parseFloat(row['面談時目標']).toFixed(1) + '%</span>' : '') + '</div>' +
         '</div>' +
         statusBadge +
       '</div>' +
@@ -830,6 +842,8 @@ async function renderList() {
           '<div class="rec-body">' +
             '<div><div class="rec-row-label">現在の紹介状況</div><div class="rec-row-val">' + (r.shokai || '—') + '</div></div>' +
             (r.kadai ? '<div><div class="rec-row-label">課題・不安</div><div class="rec-row-val">' + r.kadai + '</div></div>' : '') +
+            (r.fillinMerit ? '<div><div class="rec-row-label" style="color:#534AB7">フィルインが増えたらいいこと</div><div class="rec-row-val">' + r.fillinMerit + '</div></div>' : '') +
+            (r.monthlyTarget ? '<div><div class="rec-row-label" style="color:#185FA5">今月個別目標</div><div class="rec-row-val"><b>' + parseFloat(r.monthlyTarget).toFixed(1) + '%</b></div></div>' : '') +
             '<div><div class="rec-row-label">設定したアクション</div><div class="rec-row-val">' + (r.action || '—') + '</div></div>' +
             (r.ridanReason ? '<div><div class="rec-row-label" style="color:#C8292F">離脱ポイント：断られた理由</div><div class="rec-row-val">' + r.ridanReason + '</div></div>' : '') +
             (r.ridanIndividual ? '<div><div class="rec-row-label" style="color:#C8292F">離脱ポイント：個別事情</div><div class="rec-row-val">' + r.ridanIndividual + '</div></div>' : '') +
