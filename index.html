@@ -150,6 +150,22 @@ h1{font-size:16px;font-weight:500;margin-bottom:0.5rem;color:#1a1a1a}
         <span id="st-team" class="badge badge-blue"></span>
       </div>
     </div>
+    <div id="prev-record-box" style="display:none" class="partner-info">
+      <div class="partner-info-title">前回の面談内容（<span id="prev-date"></span>）— 継続対象者です</div>
+      <p class="hint">下のフォームに前回の内容を自動で入力しました。変更がなければそのまま保存、変わった点だけ書き直してください。</p>
+      <div class="rec-body" style="font-size:13px">
+        <div><div class="rec-row-label" style="color:#185FA5">前回の目標</div><div class="rec-row-val" id="prev-target"></div></div>
+        <div><div class="rec-row-label">前回の課題・不安</div><div class="rec-row-val" id="prev-kadai"></div></div>
+        <div><div class="rec-row-label">前回のアクション</div><div class="rec-row-val" id="prev-action"></div></div>
+        <div><div class="rec-row-label">前回の所感</div><div class="rec-row-val" id="prev-feel"></div></div>
+      </div>
+      <div class="field" style="margin-top:10px">
+        <label>前回の課題は今、どうなっていますか？ <span class="req">*</span></label>
+        <label class="radio-item"><input type="radio" name="continuity" value="continued"><span class="radio-item-text">継続している（同じ課題が残っている）</span></label>
+        <label class="radio-item"><input type="radio" name="continuity" value="changed"><span class="radio-item-text">変化した（別の課題に変わった・状況が変わった）</span></label>
+        <label class="radio-item"><input type="radio" name="continuity" value="resolved"><span class="radio-item-text">解消した（前回の課題はなくなった）</span></label>
+      </div>
+    </div>
   </div>
   <div class="card">
     <div class="section-title">面談内容</div>
@@ -307,8 +323,8 @@ h1{font-size:16px;font-weight:500;margin-bottom:0.5rem;color:#1a1a1a}
     </select>
     <select id="filter-status" onchange="renderList()">
       <option value="">状況：すべて</option>
-      <option value="recheck">再面談対象</option>
-      <option value="achieved">目標達成</option>
+      <option value="recheck">継続対象</option>
+      <option value="achieved">面談終了</option>
       <option value="progress">対応中</option>
     </select>
   </div>
@@ -331,9 +347,8 @@ h1{font-size:16px;font-weight:500;margin-bottom:0.5rem;color:#1a1a1a}
     </select>
     <select id="track-status" onchange="renderTracking()" style="font-size:13px;padding:6px 8px;border:1px solid #ccc;border-radius:8px;flex:1">
       <option value="">状況：すべて</option>
-      <option value="achieved">目標達成</option>
-      <option value="progress">改善中</option>
-      <option value="recheck">要注意</option>
+      <option value="achieved">面談終了</option>
+      <option value="recheck">継続対象</option>
       <option value="nodata">未入力</option>
     </select>
   </div>
@@ -429,7 +444,8 @@ function loadFuPartners() {
 function onPartnerChange() {
   var idx = document.getElementById('partner-select').value;
   var stats = document.getElementById('partner-stats');
-  if (idx === '') { stats.style.display = 'none'; return; }
+  var prevBox = document.getElementById('prev-record-box');
+  if (idx === '') { stats.style.display = 'none'; prevBox.style.display = 'none'; return; }
   var p = PARTNERS[idx];
   stats.style.display = 'block';
   document.getElementById('st-goukei').textContent = p.goukei.toFixed(1) + '%';
@@ -443,6 +459,39 @@ function onPartnerChange() {
   var tEl = document.getElementById('st-type');
   if (p.role && p.role !== '-') { tEl.textContent = p.role; tEl.style.display = 'inline-block'; }
   else { tEl.style.display = 'none'; }
+
+  loadPreviousRecord(p);
+}
+
+// ★追加：継続対象者向け・前回の面談記録を取得してフォームにプリセットする
+async function loadPreviousRecord(p) {
+  var prevBox = document.getElementById('prev-record-box');
+  prevBox.style.display = 'none';
+  document.querySelectorAll('input[name="continuity"]').forEach(function(r) { r.checked = false; });
+  try {
+    var res = await fetch(GAS_URL + '?type=lastRecord&partner=' + encodeURIComponent(p.name));
+    var rec = await res.json();
+    if (!rec || !rec.date) { return; } // 前回記録なし＝新規対象者なのでフォームは空のまま
+
+    prevBox.style.display = 'block';
+    document.getElementById('prev-date').textContent = rec.date;
+    document.getElementById('prev-target').textContent = rec.monthlyTarget ? parseFloat(rec.monthlyTarget).toFixed(1) + '%' : '—';
+    document.getElementById('prev-kadai').textContent = rec.kadai || '—';
+    document.getElementById('prev-action').textContent = rec.action || '—';
+    document.getElementById('prev-feel').textContent = (feelLabel[rec.feel] || rec.feel || '—');
+
+    // フォームに前回値をプリセット（担当者は変わった部分だけ書き直せばよい）
+    document.getElementById('monthly-target').value = rec.monthlyTarget || '';
+    document.getElementById('shokai').value = rec.shokai || '';
+    document.getElementById('kadai').value = rec.kadai || '';
+    document.getElementById('fillin-merit').value = rec.fillinMerit || '';
+    document.getElementById('action').value = rec.action || '';
+    document.getElementById('ridan-reason').value = rec.ridanReason || '';
+    document.getElementById('ridan-individual').value = rec.ridanIndividual || '';
+    document.getElementById('ridan-pattern').value = rec.ridanPattern || '';
+    var typeRadio = document.querySelector('input[name="type"][value="' + rec.type + '"]');
+    if (typeRadio) typeRadio.checked = true;
+  } catch(e) { console.error(e); }
 }
 
 function onFuPartnerChange() {
@@ -459,18 +508,17 @@ function onFuPartnerChange() {
 }
 
 function checkAchievement() {
+  // ★修正：完了（対象除外）の基準は「ランク目標に到達」ではなく「乖離20pt未満」
   var idx = document.getElementById('fu-partner').value;
   var fi = parseFloat(document.getElementById('fu-current-fi').value);
   var box = document.getElementById('fu-status-box');
   if (idx === '' || isNaN(fi)) { box.style.display = 'none'; return; }
   var p = PARTNERS[idx];
   box.style.display = 'block';
-  if (fi >= p.target) {
-    box.innerHTML = '<span class="tag-achieved">目標達成！ 面談対応完了</span><span style="font-size:12px;color:#3B6D11;margin-left:8px">' + fi.toFixed(1) + '% >= 目標' + p.target + '%</span>';
-  } else if (fi < p.recheck) {
-    box.innerHTML = '<span class="tag-recheck">再面談対象</span><span style="font-size:12px;color:#A32D2D;margin-left:8px">' + fi.toFixed(1) + '% < 再面談基準' + p.recheck + '%</span>';
+  if (fi >= p.recheck) {
+    box.innerHTML = '<span class="tag-achieved">乖離20pt未満に改善！面談対応完了</span><span style="font-size:12px;color:#3B6D11;margin-left:8px">' + fi.toFixed(1) + '% ≧ 完了ライン' + p.recheck + '%</span>';
   } else {
-    box.innerHTML = '<span class="tag-progress">対応中（目標未達）</span><span style="font-size:12px;color:#854F0B;margin-left:8px">' + fi.toFixed(1) + '% / 目標' + p.target + '%（あと' + (p.target - fi).toFixed(1) + 'pt）</span>';
+    box.innerHTML = '<span class="tag-progress">対応中（乖離20pt以上）</span><span style="font-size:12px;color:#854F0B;margin-left:8px">' + fi.toFixed(1) + '% / 完了ライン' + p.recheck + '%（あと' + (p.recheck - fi).toFixed(1) + 'pt）</span>';
   }
 }
 
@@ -487,8 +535,13 @@ async function saveRecord() {
   var ridanIndividual = document.getElementById('ridan-individual').value;
   var ridanPattern = document.getElementById('ridan-pattern').value;
   var monthlyTarget = document.getElementById('monthly-target').value;
+  var prevBoxVisible = document.getElementById('prev-record-box').style.display !== 'none';
+  var continuityEl = document.querySelector('input[name="continuity"]:checked');
   if (!tantou || !date || pidx === '' || !typeEl || !shokai || !action || !followup || !feelEl || !ridanReason || !ridanIndividual || !ridanPattern || !monthlyTarget) {
     alert('必須項目(*)をすべて入力してください'); return;
+  }
+  if (prevBoxVisible && !continuityEl) {
+    alert('「前回の課題は今、どうなっていますか？」を選択してください'); return;
   }
   var p = PARTNERS[pidx];
   var rec = {
@@ -503,7 +556,8 @@ async function saveRecord() {
     ridanReason: ridanReason,
     ridanIndividual: ridanIndividual,
     ridanPattern: ridanPattern,
-    monthlyTarget: parseFloat(monthlyTarget)
+    monthlyTarget: parseFloat(monthlyTarget),
+    continuityStatus: continuityEl ? continuityEl.value : ''
   };
   try {
     await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(rec) });
@@ -519,7 +573,8 @@ async function saveRecord() {
   });
   document.getElementById('partner-select').value = '';
   document.getElementById('partner-stats').style.display = 'none';
-  document.querySelectorAll('input[name="type"],input[name="feel"]').forEach(function(r) { r.checked = false; });
+  document.getElementById('prev-record-box').style.display = 'none';
+  document.querySelectorAll('input[name="type"],input[name="feel"],input[name="continuity"]').forEach(function(r) { r.checked = false; });
   filterPartners();
 }
 
@@ -534,7 +589,8 @@ async function saveFollowup() {
   }
   var p = PARTNERS[pidx];
   var fi = parseFloat(currentFI);
-  var status = fi >= p.target ? 'achieved' : fi < p.recheck ? 'recheck' : 'progress';
+  // ★修正：完了(achieved)の基準は「乖離20pt未満」。それ以外は継続対象(recheck)
+  var status = fi >= p.recheck ? 'achieved' : 'recheck';
   var rec = {
     type: 'followup', id: Date.now(),
     tantou: tantou, date: date,
@@ -596,6 +652,8 @@ function loadTracking() {
 
 function getTrackStatus(row) {
   // 月末FI率があればそれで判定、なければ15日FI率、なければnodata
+  // ★修正：面談対象条件は「ランク目標から20pt以上乖離」なので、
+  //   完了（対象除外）の基準も「ランク目標に到達」ではなく「乖離20pt未満」に統一する
   var fi15 = parseFloat(row['15日確認FI率']);
   var fiEnd = parseFloat(row['月末FI率']);
   var target = parseFloat(row['目標FI率']) || 0;
@@ -603,9 +661,8 @@ function getTrackStatus(row) {
 
   var latestFi = !isNaN(fiEnd) ? fiEnd : (!isNaN(fi15) ? fi15 : NaN);
   if (isNaN(latestFi)) return 'nodata';
-  if (latestFi >= target) return 'achieved';
-  if (latestFi < recheck) return 'recheck';
-  return 'progress';
+  if (latestFi >= recheck) return 'achieved';
+  return 'recheck';
 }
 
 function arrowHtml(prev, curr) {
@@ -649,8 +706,8 @@ function renderTracking() {
 
   summaryArea.innerHTML = '<div class="track-summary">' +
     '<div class="track-summary-item"><div class="track-summary-label">対象者合計</div><div class="track-summary-val">' + total + '名</div></div>' +
-    '<div class="track-summary-item"><div class="track-summary-label" style="color:#3B6D11">目標達成</div><div class="track-summary-val" style="color:#3B6D11">' + achieved + '名</div></div>' +
-    '<div class="track-summary-item"><div class="track-summary-label" style="color:#A32D2D">要注意</div><div class="track-summary-val" style="color:#A32D2D">' + recheckCount + '名</div></div>' +
+    '<div class="track-summary-item"><div class="track-summary-label" style="color:#3B6D11">面談終了</div><div class="track-summary-val" style="color:#3B6D11">' + achieved + '名</div></div>' +
+    '<div class="track-summary-item"><div class="track-summary-label" style="color:#A32D2D">継続対象</div><div class="track-summary-val" style="color:#A32D2D">' + recheckCount + '名</div></div>' +
     '<div class="track-summary-item"><div class="track-summary-label" style="color:#bbb">未入力</div><div class="track-summary-val" style="color:#bbb">' + nodata + '名</div></div>' +
   '</div>';
 
@@ -668,9 +725,8 @@ function renderTracking() {
 
     var cardClass = 'track-card ' + status;
     var statusBadge = '';
-    if (status === 'achieved') statusBadge = '<span class="tag-achieved">目標達成</span>';
-    else if (status === 'recheck') statusBadge = '<span class="tag-recheck">要注意</span>';
-    else if (status === 'progress') statusBadge = '<span class="tag-progress">改善中</span>';
+    if (status === 'achieved') statusBadge = '<span class="tag-achieved">面談終了（乖離20pt未満）</span>';
+    else if (status === 'recheck') statusBadge = '<span class="tag-recheck">継続対象（乖離20pt以上）</span>';
     else statusBadge = '<span class="badge badge-gray">未入力</span>';
 
     // 最新FIとの差分（抽出時比）
@@ -683,14 +739,15 @@ function renderTracking() {
       diffHtml = '<span class="diff-badge ' + diffClass + '">' + sign + diff.toFixed(1) + 'pt</span>';
     }
 
-    // 目標まであと何pt
+    // 完了ライン（ランク目標-20pt）まであと何pt
     var toTargetHtml = '';
+    var recheckLine = target - 20;
     if (!isNaN(latestFi) && target > 0) {
-      var toTarget = target - latestFi;
-      if (toTarget <= 0) {
-        toTargetHtml = '<span style="font-size:11px;color:#3B6D11">目標クリア！</span>';
+      var toLine = recheckLine - latestFi;
+      if (toLine <= 0) {
+        toTargetHtml = '<span style="font-size:11px;color:#3B6D11">完了ライン達成！</span>';
       } else {
-        toTargetHtml = '<span style="font-size:11px;color:#888">目標まで あと ' + toTarget.toFixed(1) + 'pt</span>';
+        toTargetHtml = '<span style="font-size:11px;color:#888">完了ラインまで あと ' + toLine.toFixed(1) + 'pt</span>';
       }
     }
 
@@ -719,6 +776,7 @@ function renderTracking() {
 
 var feelLabel = {good:'良好',mid:'普通',bad:'要フォロー'};
 var typeLabel = {type1:'乖離大・通常FI安定',type2:'乖離あり・一定数取れている',type3:'通常FI 10%未満'};
+var continuityLabel = {continued:'継続している',changed:'変化した',resolved:'解消した'};
 
 function toggleDetail(id) {
   var el = document.getElementById('d-' + id);
@@ -819,8 +877,8 @@ async function renderList() {
       var statusBadge = '';
       var cardClass = 'rec-card';
       if (fu) {
-        if (fu.status === 'achieved') statusBadge = '<span class="tag-achieved">目標達成</span>';
-        else if (fu.status === 'recheck') { statusBadge = '<span class="tag-recheck">再面談対象</span>'; cardClass = 'rec-card recheck'; }
+        if (fu.status === 'achieved') statusBadge = '<span class="tag-achieved">面談終了（乖離20pt未満）</span>';
+        else if (fu.status === 'recheck') { statusBadge = '<span class="tag-recheck">継続対象</span>'; cardClass = 'rec-card recheck'; }
         else statusBadge = '<span class="tag-progress">対応中</span>';
       }
       return '<div class="' + cardClass + '">' +
@@ -846,6 +904,7 @@ async function renderList() {
             (r.kadai ? '<div><div class="rec-row-label">課題・不安</div><div class="rec-row-val">' + r.kadai + '</div></div>' : '') +
             (r.fillinMerit ? '<div><div class="rec-row-label" style="color:#534AB7">フィルインが増えたらいいこと</div><div class="rec-row-val">' + r.fillinMerit + '</div></div>' : '') +
             (r.monthlyTarget ? '<div><div class="rec-row-label" style="color:#185FA5">今月個別目標</div><div class="rec-row-val"><b>' + parseFloat(r.monthlyTarget).toFixed(1) + '%</b></div></div>' : '') +
+            (r.continuityStatus ? '<div><div class="rec-row-label" style="color:#3C3489">継続ステータス</div><div class="rec-row-val">' + (continuityLabel[r.continuityStatus] || r.continuityStatus) + '</div></div>' : '') +
             '<div><div class="rec-row-label">設定したアクション</div><div class="rec-row-val">' + (r.action || '—') + '</div></div>' +
             (r.ridanReason ? '<div><div class="rec-row-label" style="color:#C8292F">離脱ポイント：断られた理由</div><div class="rec-row-val">' + r.ridanReason + '</div></div>' : '') +
             (r.ridanIndividual ? '<div><div class="rec-row-label" style="color:#C8292F">離脱ポイント：個別事情</div><div class="rec-row-val">' + r.ridanIndividual + '</div></div>' : '') +
