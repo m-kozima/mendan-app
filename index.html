@@ -105,7 +105,6 @@ h1{font-size:16px;font-weight:500;margin-bottom:0.5rem;color:#1a1a1a}
 </div>
 <div class="nav">
   <button class="nav-btn active" onclick="showPage('input',this)">面談を記録</button>
-  <button class="nav-btn" onclick="showPage('followup',this)">フォローアップ</button>
   <button class="nav-btn" onclick="showPage('list',this)">一覧・確認</button>
   <button class="nav-btn" onclick="showPage('tracking',this)">FI推移</button>
 </div>
@@ -166,7 +165,25 @@ h1{font-size:16px;font-weight:500;margin-bottom:0.5rem;color:#1a1a1a}
         <label class="radio-item"><input type="radio" name="continuity" value="resolved"><span class="radio-item-text">解消した（前回の課題はなくなった）</span></label>
       </div>
     </div>
+    <div id="quick-check-box" style="display:none" class="card">
+      <div class="section-title">今の数値確認</div>
+      <div class="field">
+        <label>現在の合計FI率（%） <span class="req">*</span></label>
+        <input type="number" id="quick-fi" placeholder="例：48.5" step="0.1" oninput="checkQuickStatus()">
+        <p class="hint">面談時点でパートナーから聞いた・確認した数値を入力してください。乖離20pt未満ならこのまま「完了として記録」できます。20pt以上ならこの下の面談フォームに進みます。</p>
+      </div>
+      <div id="quick-status-box" style="display:none;margin-top:8px"></div>
+      <div id="quick-complete-area" style="display:none;margin-top:10px">
+        <div class="field">
+          <label>一言メモ（任意）</label>
+          <textarea id="quick-memo" placeholder="改善できた点など、あれば一言"></textarea>
+        </div>
+        <button class="btn-primary" onclick="saveQuickComplete()">完了として記録する</button>
+        <div class="save-msg" id="quick-save-msg">保存しました！</div>
+      </div>
+    </div>
   </div>
+  <div id="full-interview-form">
   <div class="card">
     <div class="section-title">面談内容</div>
     <div class="field">
@@ -236,10 +253,11 @@ h1{font-size:16px;font-weight:500;margin-bottom:0.5rem;color:#1a1a1a}
   </div>
   <button class="btn-primary" onclick="saveRecord()">面談結果を保存</button>
   <div class="save-msg" id="save-msg">保存しました！</div>
+  </div>
 </div>
 
-<!-- フォローアップタブ -->
-<div id="page-followup" class="page">
+<!-- フォローアップタブ：面談を記録タブの「今の数値確認」に統合したため非表示（データ・機能は保持） -->
+<div id="page-followup" class="page" style="display:none">
   <div class="card">
     <div class="section-title">基本情報</div>
     <div class="grid2">
@@ -445,7 +463,13 @@ function onPartnerChange() {
   var idx = document.getElementById('partner-select').value;
   var stats = document.getElementById('partner-stats');
   var prevBox = document.getElementById('prev-record-box');
-  if (idx === '') { stats.style.display = 'none'; prevBox.style.display = 'none'; return; }
+  var quickBox = document.getElementById('quick-check-box');
+  var fullForm = document.getElementById('full-interview-form');
+  if (idx === '') {
+    stats.style.display = 'none'; prevBox.style.display = 'none';
+    quickBox.style.display = 'none'; fullForm.style.display = 'none';
+    return;
+  }
   var p = PARTNERS[idx];
   stats.style.display = 'block';
   document.getElementById('st-goukei').textContent = p.goukei.toFixed(1) + '%';
@@ -460,7 +484,70 @@ function onPartnerChange() {
   if (p.role && p.role !== '-') { tEl.textContent = p.role; tEl.style.display = 'inline-block'; }
   else { tEl.style.display = 'none'; }
 
+  // ★数値確認欄を表示し、値が入るまでは面談フォームを隠す（必須ゲート）
+  quickBox.style.display = 'block';
+  document.getElementById('quick-fi').value = '';
+  document.getElementById('quick-status-box').style.display = 'none';
+  document.getElementById('quick-complete-area').style.display = 'none';
+  fullForm.style.display = 'none';
+
   loadPreviousRecord(p);
+}
+
+// ★追加：今の数値確認 → 乖離20pt未満なら「完了」導線、20pt以上なら面談フォームを開く
+function checkQuickStatus() {
+  var idx = document.getElementById('partner-select').value;
+  var fi = parseFloat(document.getElementById('quick-fi').value);
+  var box = document.getElementById('quick-status-box');
+  var completeArea = document.getElementById('quick-complete-area');
+  var fullForm = document.getElementById('full-interview-form');
+  if (idx === '' || isNaN(fi)) {
+    box.style.display = 'none';
+    completeArea.style.display = 'none';
+    fullForm.style.display = 'none';
+    return;
+  }
+  var p = PARTNERS[idx];
+  box.style.display = 'block';
+  if (fi >= p.recheck) {
+    box.innerHTML = '<span class="tag-achieved">乖離20pt未満に改善済み</span><span style="font-size:12px;color:#3B6D11;margin-left:8px">' + fi.toFixed(1) + '% ≧ 完了ライン' + p.recheck + '%</span>';
+    completeArea.style.display = 'block';
+    fullForm.style.display = 'none';
+  } else {
+    box.innerHTML = '<span class="tag-progress">まだ乖離20pt以上あります（完了ラインまで' + (p.recheck - fi).toFixed(1) + 'pt）</span>';
+    completeArea.style.display = 'none';
+    fullForm.style.display = 'block';
+  }
+}
+
+// ★追加：乖離20pt未満に改善済みの場合の軽量完了記録（既存のfollowupシートに保存）
+async function saveQuickComplete() {
+  var tantou = document.getElementById('tantousha').value;
+  var date = document.getElementById('mendan-date').value;
+  var pidx = document.getElementById('partner-select').value;
+  var fi = parseFloat(document.getElementById('quick-fi').value);
+  if (!tantou || !date || pidx === '' || isNaN(fi)) {
+    alert('担当者・面談実施日・パートナー・現在の合計FI率を入力してください'); return;
+  }
+  var p = PARTNERS[pidx];
+  var rec = {
+    type: 'followup', id: Date.now(),
+    tantou: tantou, date: date,
+    partnerName: p.name, store: p.store,
+    rank: p.rank, currentFI: fi,
+    targetFI: p.target, status: 'achieved',
+    improved: document.getElementById('quick-memo').value,
+    notImproved: '', nextAction: '', followup: ''
+  };
+  try {
+    await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(rec) });
+  } catch(e) { console.error(e); }
+  var msg = document.getElementById('quick-save-msg');
+  msg.style.display = 'block';
+  setTimeout(function() { msg.style.display = 'none'; }, 2000);
+  document.getElementById('quick-memo').value = '';
+  document.getElementById('partner-select').value = '';
+  onPartnerChange();
 }
 
 // ★追加：継続対象者向け・前回の面談記録を取得してフォームにプリセットする
@@ -526,6 +613,7 @@ async function saveRecord() {
   var tantou = document.getElementById('tantousha').value;
   var date = document.getElementById('mendan-date').value;
   var pidx = document.getElementById('partner-select').value;
+  var quickFi = document.getElementById('quick-fi').value;
   var typeEl = document.querySelector('input[name="type"]:checked');
   var shokai = document.getElementById('shokai').value;
   var action = document.getElementById('action').value;
@@ -537,8 +625,8 @@ async function saveRecord() {
   var monthlyTarget = document.getElementById('monthly-target').value;
   var prevBoxVisible = document.getElementById('prev-record-box').style.display !== 'none';
   var continuityEl = document.querySelector('input[name="continuity"]:checked');
-  if (!tantou || !date || pidx === '' || !typeEl || !shokai || !action || !followup || !feelEl || !ridanReason || !ridanIndividual || !ridanPattern || !monthlyTarget) {
-    alert('必須項目(*)をすべて入力してください'); return;
+  if (!tantou || !date || pidx === '' || quickFi === '' || !typeEl || !shokai || !action || !followup || !feelEl || !ridanReason || !ridanIndividual || !ridanPattern || !monthlyTarget) {
+    alert('必須項目(*)をすべて入力してください（現在の合計FI率も必須です）'); return;
   }
   if (prevBoxVisible && !continuityEl) {
     alert('「前回の課題は今、どうなっていますか？」を選択してください'); return;
@@ -548,6 +636,7 @@ async function saveRecord() {
     id: Date.now(), tantou: tantou, date: date,
     partnerName: p.name, store: p.store, team: p.team,
     fi: p.fi, para: p.para, parafi: p.parafi, kairi: p.kairi,
+    currentFI: parseFloat(quickFi),
     type: typeEl.value, shokai: shokai,
     kadai: document.getElementById('kadai').value,
     fillinMerit: document.getElementById('fillin-merit').value,
@@ -568,12 +657,15 @@ async function saveRecord() {
   var msg = document.getElementById('save-msg');
   msg.style.display = 'block';
   setTimeout(function() { msg.style.display = 'none'; }, 2000);
-  ['tantousha','mendan-date','shokai','kadai','fillin-merit','action','followup-date','tokki','ridan-reason','ridan-individual','ridan-pattern','monthly-target'].forEach(function(id) {
+  ['tantousha','mendan-date','shokai','kadai','fillin-merit','action','followup-date','tokki','ridan-reason','ridan-individual','ridan-pattern','monthly-target','quick-fi'].forEach(function(id) {
     document.getElementById(id).value = '';
   });
   document.getElementById('partner-select').value = '';
   document.getElementById('partner-stats').style.display = 'none';
   document.getElementById('prev-record-box').style.display = 'none';
+  document.getElementById('quick-check-box').style.display = 'none';
+  document.getElementById('quick-status-box').style.display = 'none';
+  document.getElementById('full-interview-form').style.display = 'none';
   document.querySelectorAll('input[name="type"],input[name="feel"],input[name="continuity"]').forEach(function(r) { r.checked = false; });
   filterPartners();
 }
