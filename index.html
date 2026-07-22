@@ -151,7 +151,7 @@ h1{font-size:16px;font-weight:500;margin-bottom:0.5rem;color:#1a1a1a}
     </div>
     <div id="prev-record-box" style="display:none" class="partner-info">
       <div class="partner-info-title">前回の面談内容（<span id="prev-date"></span>）— 継続対象者です</div>
-      <p class="hint">下のフォームに前回の内容を自動で入力しました。変更がなければそのまま保存、変わった点だけ書き直してください。</p>
+      <p class="hint">前回の内容はこちらで確認できます。面談内容は毎回変わるため、下の記入欄は空欄の状態で新しく記入してください（目標値のみ前回値が入っています）。</p>
       <div class="rec-body" style="font-size:13px">
         <div><div class="rec-row-label" style="color:#185FA5">前回の目標</div><div class="rec-row-val" id="prev-target"></div></div>
         <div><div class="rec-row-label">前回の課題・不安</div><div class="rec-row-val" id="prev-kadai"></div></div>
@@ -576,17 +576,9 @@ async function loadPreviousRecord(p) {
     document.getElementById('prev-action').textContent = rec.action || '—';
     document.getElementById('prev-feel').textContent = (feelLabel[rec.feel] || rec.feel || '—');
 
-    // フォームに前回値をプリセット（担当者は変わった部分だけ書き直せばよい）
+    // ★面談内容は毎回変わるため記入欄への自動転記はしない（上の参照ボックスで確認できるため）。
+    // 目標値だけは継続性のある数値なので前回値をプリセットしておく。
     document.getElementById('monthly-target').value = rec.monthlyTarget || '';
-    document.getElementById('shokai').value = rec.shokai || '';
-    document.getElementById('kadai').value = rec.kadai || '';
-    document.getElementById('fillin-merit').value = rec.fillinMerit || '';
-    document.getElementById('action').value = rec.action || '';
-    document.getElementById('ridan-reason').value = rec.ridanReason || '';
-    document.getElementById('ridan-individual').value = rec.ridanIndividual || '';
-    document.getElementById('ridan-pattern').value = rec.ridanPattern || '';
-    var typeRadio = document.querySelector('input[name="type"][value="' + rec.type + '"]');
-    if (typeRadio) typeRadio.checked = true;
   } catch(e) {
     console.error(e);
   }
